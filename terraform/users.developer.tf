@@ -30,6 +30,12 @@ resource "openstack_identity_user_v3" "fabian_erpf" {
   }
 }
 
+resource "openstack_identity_role_assignment_v3" "role_assignment_fabian_erpf" {
+  user_id    = openstack_identity_user_v3.fabian_erpf.id
+  project_id = openstack_identity_project_v3.erpf_test.id
+  role_id    = openstack_identity_role_v3.developers.id
+}
+
 resource "random_password" "fabian_erpf" {
   length           = 16
   special          = true
@@ -64,4 +70,10 @@ resource "random_password" "jakob_erpf" {
   length           = 16
   special          = true
   override_special = "_%@"
+}
+
+resource "openstack_identity_role_assignment_v3" "role_assignment_jakob_erpf" {
+  user_id    = openstack_identity_user_v3.jakob_erpf.id
+  project_id = openstack_identity_project_v3.erpf_test.id
+  role_id    = openstack_identity_role_v3.developers.id
 }
