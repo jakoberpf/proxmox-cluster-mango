@@ -1,0 +1,47 @@
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow ssh
+sudo ufw enable
+
+sudo apt-get install vino
+sudo apt-get install htop
+sudo apt-get install timeshift
+
+# (https://dev.to/rahedmir/how-to-use-timeshift-from-command-line-in-linux-1l9b)
+# (https://github.com/teejee2008/timeshift)
+sudo timeshift --snapshot-device /dev/sdX
+sudo timeshift --rsync
+sudo timeshift --create --comments "Hourly Snapshot" --tags H
+
+url -s https://install.zerotier.com | sudo bash
+sudo zerotier-cli join <id>
+
+# https://docs.openstack.org/devstack/latest/
+# setup local.conf
+# ./stack.sh
+
+# OR
+
+# https://microstack.run/docs/single-node
+# sudo snap install microstack --beta --devmode
+# sudo microstack init --auto --control
+
+# (https://docs.openstack.org/mitaka/config-reference/firewalls-default-ports.html)
+sudo ufw allow http       #
+sudo ufw allow https      #
+sudo ufw allow 873/tcp    # Rsync Endpoint
+sudo ufw allow 5000/tcp   # Identity service public endpoint
+sudo ufw allow 8776/tcp   #
+sudo ufw allow 8774/tcp   #
+sudo ufw allow 8386/tcp   #
+sudo ufw allow 35357/tcp  #
+sudo ufw allow 9292/tcp   #
+sudo ufw allow 9696/tcp   #
+sudo ufw allow 8004/tcp   #
+sudo ufw allow 8777/tcp   #
+
+sudo snap get microstack config.credentials.keystone-password
+
+sudo apt-get install nginx
+
+################ https://mutschler.eu/linux/install-guides/ubuntu-btrfs/
