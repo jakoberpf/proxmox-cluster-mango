@@ -1,0 +1,10 @@
+---
+- name: Preprare Development Machine
+  hosts: machine
+  remote_user: jakoberpf
+
+  roles:
+
+    - name: common/suders
+      vars:
+        os_passwordless_sudoers: ["jakoberpf"]
