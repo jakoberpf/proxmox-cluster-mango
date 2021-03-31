@@ -5,6 +5,6 @@
 
   roles:
 
-    - name: common/suders
+    - name: common/sudoers
       vars:
-        os_passwordless_sudoers: ["jakoberpf"]
+        security_sudoers_passwordless: ["jakoberpf"]
