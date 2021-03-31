@@ -3,4 +3,5 @@ terraform/.terraform.lock.hcl
 terraform/.terraform/*
 terraform/terraform.tfstate.backup
 terraform/.envrc
+terraform/logs/
 mount/
