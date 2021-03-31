@@ -86,7 +86,7 @@ sudo vgs
 kolla-genpwd
 
 # Setpu globals.yaml
-
+source $HOME/kolla-openstack/bin/activate
 kolla-ansible -i all-in-one bootstrap-servers
 kolla-ansible -i all-in-one prechecks
 kolla-ansible -i all-in-one deploy
