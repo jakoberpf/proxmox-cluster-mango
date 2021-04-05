@@ -108,4 +108,5 @@ sudo ufw allow 9696/tcp   #
 sudo ufw allow 8004/tcp   #
 sudo ufw allow 8777/tcp   #
 
+# https://www.cloudqubes.com/hands-on/linux/setting-up-an-nginx-reverse-proxy-for-openstack/
 sudo apt-get install nginx
