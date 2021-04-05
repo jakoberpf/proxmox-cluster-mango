@@ -94,6 +94,9 @@ server {
     listen 10.147.19.88:9292;
     server_name openstack.dev.jakoberpf.de; 
 
+    # don't check client body size to allow image uploads #
+    client_max_body_size 0;
+
     access_log /var/log/nginx/reverse-access.log;
     error_log /var/log/nginx/reverse-error.log;
 
