@@ -21,13 +21,13 @@ resource "openstack_images_image_v2" "cirros" {
   }
 }
 
-resource "openstack_images_image_v2" "ubuntu2004" {
-  name             = "Ubuntu20.04"
-  image_source_url = "http://archive.ubuntu.com/ubuntu/dists/focal/main/installer-amd64/"
-  container_format = "bare"
-  disk_format      = "qcow2"
+# resource "openstack_images_image_v2" "ubuntu2004" {
+#   name             = "Ubuntu20.04"
+#   image_source_url = "http://archive.ubuntu.com/ubuntu/dists/focal/main/installer-amd64/"
+#   container_format = "bare"
+#   disk_format      = "qcow2"
 
-  properties = {
-    usage = "common"
-  }
-}
+#   properties = {
+#     usage = "common"
+#   }
+# }
