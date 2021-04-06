@@ -1,0 +1,15 @@
+resource "openstack_compute_instance_v2" "basic" {
+  name            = "test"
+  image_name      = "Cirros"
+  flavor_name     = "m1.large"
+  key_pair        = "jakoberpf"
+  security_groups = ["default"]
+
+  metadata = {
+    this = "that"
+  }
+
+  network {
+    name = "test"
+  }
+}
