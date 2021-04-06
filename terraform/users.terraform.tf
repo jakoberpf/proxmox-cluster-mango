@@ -2,17 +2,8 @@
 #   name = "terraform"
 # }
 
-resource "openstack_identity_user_v3" "terraform_test" {
-  default_project_id = openstack_identity_project_v3.test.id
-  name               = "terraform_test"
-  description        = "A user for terraform in the testing project"
-
-  password = random_password.terraform_test.result
-
-  ignore_change_password_upon_first_use = true
-}
-
-resource "random_password" "terraform_test" {
+resource "random_password" "terraform" {
+  count            = 2
   length           = 16
   special          = true
   override_special = "_%@"
@@ -23,13 +14,16 @@ resource "openstack_identity_user_v3" "terraform_dev" {
   name               = "terraform_dev"
   description        = "A user for terraform in the development project"
 
-  password = random_password.terraform_dev.result
+  password = random_password.terraform[0].result
 
   ignore_change_password_upon_first_use = true
 }
+resource "openstack_identity_user_v3" "terraform_test" {
+  default_project_id = openstack_identity_project_v3.test.id
+  name               = "terraform_test"
+  description        = "A user for terraform in the testing project"
 
-resource "random_password" "terraform_dev" {
-  length           = 16
-  special          = true
-  override_special = "_%@"
+  password = random_password.terraform[1].result
+
+  ignore_change_password_upon_first_use = true
 }
