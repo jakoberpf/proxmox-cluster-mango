@@ -3,9 +3,6 @@ resource "openstack_compute_flavor_v2" "m1_tiny" {
   ram   = "512"
   vcpus = "1"
   disk  = "1"
-
-  extra_specs = {
-  }
 }
 
 resource "openstack_compute_flavor_v2" "m1_small" {
@@ -13,9 +10,6 @@ resource "openstack_compute_flavor_v2" "m1_small" {
   ram   = "2048"
   vcpus = "2"
   disk  = "10"
-
-  extra_specs = {
-  }
 }
 
 resource "openstack_compute_flavor_v2" "m1_medium" {
@@ -23,9 +17,6 @@ resource "openstack_compute_flavor_v2" "m1_medium" {
   ram   = "4096"
   vcpus = "4"
   disk  = "20"
-
-  extra_specs = {
-  }
 }
 
 resource "openstack_compute_flavor_v2" "m1_large" {
@@ -33,9 +24,6 @@ resource "openstack_compute_flavor_v2" "m1_large" {
   ram   = "8192"
   vcpus = "4"
   disk  = "40"
-
-  extra_specs = {
-  }
 }
 
 resource "openstack_compute_flavor_v2" "m1_xlarge" {
@@ -43,7 +31,4 @@ resource "openstack_compute_flavor_v2" "m1_xlarge" {
   ram   = "16384"
   vcpus = "4"
   disk  = "80"
-
-  extra_specs = {
-  }
 }
