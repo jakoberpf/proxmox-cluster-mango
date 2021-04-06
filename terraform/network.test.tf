@@ -1,7 +1,7 @@
 resource "openstack_networking_network_v2" "test" {
   admin_state_up          = true
   description             = ""
-  dns_domain              = ""
+  # dns_domain              = "test.openstack.dev.jakoberpf.de."
   availability_zone_hints = []
   external                = false
   name                    = "test"
