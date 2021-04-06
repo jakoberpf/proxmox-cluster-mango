@@ -6,3 +6,4 @@ terraform/.envrc
 terraform/logs/
 mount/
 terraform/.terraform.tfstate.lock.info
+terraform/files/logins
