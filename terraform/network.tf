@@ -7,7 +7,6 @@ resource "openstack_networking_network_v2" "external" {
   name                    = "external"
   # port_security_enabled   = true
   qos_policy_id           = ""
-#   region                  = "RegionOne"
   segments {
       network_type   = "flat"
       physical_network = "physnet1"
@@ -21,7 +20,7 @@ resource "openstack_networking_subnet_v2" "external-subnet" {
     end   = "192.168.2.254"
     start = "192.168.2.100"
   }
-  cidr              = "192.168.2.0/24" # The external network should reside in the local network, where the servers are deployed in (MAAS)
+  cidr              = "192.168.0.0/22" # The external network should reside in the local network, where the servers are deployed in (MAAS)
   description       = ""
   dns_nameservers   = [] # ["1.1.1.1","8.8.8.8"]
   enable_dhcp       = false
@@ -32,7 +31,6 @@ resource "openstack_networking_subnet_v2" "external-subnet" {
   # ipv6_ra_mode      = ""
   name              = "external-subnet-custom"
   network_id        = openstack_networking_network_v2.external.id
-#   region            = "RegionOne"
   subnetpool_id     = ""
   tags              = []
 
