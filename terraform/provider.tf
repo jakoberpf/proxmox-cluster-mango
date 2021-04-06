@@ -5,7 +5,7 @@ terraform {
       # version = "1.35.0"
     }
   }
-  required_version = ">= 0.13"
+  required_version = ">= 0.14"
 }
 
 provider "openstack" {}
