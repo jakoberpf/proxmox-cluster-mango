@@ -12,10 +12,6 @@ resource "openstack_networking_network_v2" "test" {
 }
 
 resource "openstack_networking_subnet_v2" "test-subnet" {
-#   allocation_pool {
-#     end   = "192.168.222.254"
-#     start = "192.168.222.2"
-#   }
   cidr              = "10.0.0.0/24"
   description       = ""
   dns_nameservers   = ["1.1.1.1","8.8.8.8"]
@@ -24,7 +20,7 @@ resource "openstack_networking_subnet_v2" "test-subnet" {
   # host_routes {}
   ip_version        = 4
   name              = "test-subnet"
-  network_id        = "${openstack_networking_network_v2.test.id}"
+  network_id        = openstack_networking_network_v2.test.id
   subnetpool_id     = ""
   tags              = []
 
