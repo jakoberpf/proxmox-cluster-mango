@@ -34,16 +34,11 @@ resource "openstack_identity_user_v3" "jakob_erpf" {
   }
 }
 
-output "password_jakoberpf" {
-  value = openstack_identity_user_v3.jakob_erpf.password
-}
-
 resource "openstack_identity_role_assignment_v3" "role_assignment_jakob_erpf" {
   user_id    = openstack_identity_user_v3.jakob_erpf.id
   project_id = openstack_identity_project_v3.test.id
   role_id    = openstack_identity_role_v3.developers.id
 }
-
 resource "openstack_identity_role_assignment_v3" "role_assignment_jakob_erpf_dev" {
   user_id    = openstack_identity_user_v3.jakob_erpf.id
   project_id = openstack_identity_project_v3.dev.id
@@ -77,14 +72,8 @@ resource "openstack_identity_role_assignment_v3" "role_assignment_fabian_erpf" {
   project_id = openstack_identity_project_v3.test.id
   role_id    = openstack_identity_role_v3.developers.id
 }
-
-
 resource "openstack_identity_role_assignment_v3" "role_assignment_fabian_erpf_dev" {
   user_id    = openstack_identity_user_v3.fabian_erpf.id
   project_id = openstack_identity_project_v3.dev.id
   role_id    = openstack_identity_role_v3.developers.id
-}
-
-output "password_fabianerpf" {
-  value = openstack_identity_user_v3.fabian_erpf.password
 }
