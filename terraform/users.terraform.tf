@@ -11,7 +11,7 @@ resource "random_password" "terraform" {
 
 resource "openstack_identity_user_v3" "terraform_dev" {
   default_project_id = openstack_identity_project_v3.dev.id
-  name               = "terraform_dev"
+  name               = "terraform.dev"
   description        = "A user for terraform in the development project"
 
   password = random_password.terraform[0].result
@@ -20,7 +20,7 @@ resource "openstack_identity_user_v3" "terraform_dev" {
 }
 resource "openstack_identity_user_v3" "terraform_test" {
   default_project_id = openstack_identity_project_v3.test.id
-  name               = "terraform_test"
+  name               = "terraform.test"
   description        = "A user for terraform in the testing project"
 
   password = random_password.terraform[1].result
