@@ -16,7 +16,7 @@ resource "openstack_compute_instance_v2" "basic" {
 
 resource "openstack_compute_instance_v2" "ubuntu" {
   name            = "ubuntu"
-  image_name      = "Ubuntu20.04"
+  image_name      = "Ubuntu20.04LTS"
   flavor_name     = "m1.large"
   key_pair        = "jakoberpf"
   security_groups = ["default"]

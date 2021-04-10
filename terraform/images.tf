@@ -1,3 +1,5 @@
+# Official sources for images: https://docs.openstack.org/image-guide/obtain-images.html
+
 resource "openstack_images_image_v2" "rancheros" {
   name             = "RancherOS"
   image_source_url = "https://releases.rancher.com/os/latest/rancheros-openstack.img"
@@ -21,13 +23,35 @@ resource "openstack_images_image_v2" "cirros" {
   }
 }
 
-# resource "openstack_images_image_v2" "ubuntu2004" {
-#   name             = "Ubuntu20.04"
-#   image_source_url = "http://archive.ubuntu.com/ubuntu/dists/focal/main/installer-amd64/"
-#   container_format = "bare"
-#   disk_format      = "qcow2"
+resource "openstack_images_image_v2" "ubuntu18-04" {
+  name             = "Ubuntu18.04LTS"
+  image_source_url = "https://cloud-images.ubuntu.com/bionic/current/bionic-server-cloudimg-amd64.img"
+  container_format = "bare"
+  disk_format      = "qcow2"
 
-#   properties = {
-#     usage = "common"
-#   }
-# }
+  properties = {
+    usage = "common"
+  }
+}
+
+resource "openstack_images_image_v2" "ubuntu20-04" {
+  name             = "Ubuntu20.04LTS"
+  image_source_url = "https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img"
+  container_format = "bare"
+  disk_format      = "qcow2"
+
+  properties = {
+    usage = "common"
+  }
+}
+
+resource "openstack_images_image_v2" "ubuntu20-10" {
+  name             = "Ubuntu20.10STR"
+  image_source_url = "https://cloud-images.ubuntu.com/groovy/current/groovy-server-cloudimg-amd64.img"
+  container_format = "bare"
+  disk_format      = "qcow2"
+
+  properties = {
+    usage = "common"
+  }
+}
