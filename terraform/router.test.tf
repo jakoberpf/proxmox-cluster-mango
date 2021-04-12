@@ -3,7 +3,7 @@ resource "openstack_networking_router_v2" "test_router" {
   availability_zone_hints   = []
   description               = ""
   enable_snat               = true
-  external_network_id       = "${openstack_networking_network_v2.external.id}"
+  external_network_id       = openstack_networking_network_v2.external.id
   name                  = "test-router"
 #   region                = "RegionOne"
   tags                  = []
@@ -14,8 +14,8 @@ resource "openstack_networking_router_v2" "test_router" {
 }
 
 resource "openstack_networking_router_interface_v2" "test-router_interface_test" {
-  router_id = "${openstack_networking_router_v2.test_router.id}"
-  subnet_id = "${openstack_networking_subnet_v2.test-subnet.id}"
+  router_id = openstack_networking_router_v2.test_router.id
+  subnet_id = openstack_networking_subnet_v2.test-subnet.id
 
   depends_on = [
     openstack_networking_router_v2.test_router,
