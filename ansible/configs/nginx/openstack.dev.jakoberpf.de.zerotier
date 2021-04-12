@@ -117,3 +117,16 @@ server {
         proxy_pass http://openstack.dev.jakoberpf.de:6080;
   }
 }
+
+# magnum
+server {
+    listen 10.147.19.88:9511;
+    server_name openstack.dev.jakoberpf.de; 
+
+    access_log /var/log/nginx/reverse-access.log;
+    error_log /var/log/nginx/reverse-error.log;
+
+    location / {
+        proxy_pass http://openstack.dev.jakoberpf.de:9511;
+  }
+}
