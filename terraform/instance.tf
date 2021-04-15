@@ -1,7 +1,7 @@
 resource "openstack_compute_instance_v2" "bastion" {
   name            = "ubuntu"
   image_name      = "Ubuntu20.04LTS"
-  flavor_name     = "m1.tiny"
+  flavor_name     = "m1.small"
   key_pair        = "jakoberpf"
   security_groups = ["default"]
 
@@ -10,7 +10,7 @@ resource "openstack_compute_instance_v2" "bastion" {
   }
 
   network {
-    name = "test"
+    name = openstack_networking_network_v2.test.name
   }
 
   depends_on = [

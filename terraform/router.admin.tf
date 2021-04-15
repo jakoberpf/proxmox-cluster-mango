@@ -4,8 +4,7 @@ resource "openstack_networking_router_v2" "test_router" {
   description             = ""
   enable_snat             = true
   external_network_id     = openstack_networking_network_v2.external.id
-  name                    = "test-router"
-  #   region                = "RegionOne"
+  name                    = "admin-router"
   tags = []
 
   depends_on = [
