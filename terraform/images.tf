@@ -6,6 +6,7 @@ resource "openstack_images_image_v2" "rancheros" {
   container_format = "bare"
   disk_format      = "qcow2"
   visibility       = "public"
+  # protected        = true
   web_download     = true
 
   properties = {
@@ -20,6 +21,7 @@ resource "openstack_images_image_v2" "cirros" {
   container_format = "bare"
   disk_format      = "qcow2"
   visibility       = "public"
+  # protected        = true
   web_download     = true
 
   properties = {
@@ -33,6 +35,7 @@ resource "openstack_images_image_v2" "ubuntu18-04" {
   container_format = "bare"
   disk_format      = "qcow2"
   visibility       = "public"
+  # protected        = true
   web_download     = true
 
   properties = {
@@ -46,6 +49,7 @@ resource "openstack_images_image_v2" "ubuntu20-04" {
   container_format = "bare"
   disk_format      = "qcow2"
   visibility       = "public"
+  # protected        = true
   web_download     = true
 
   properties = {
@@ -59,6 +63,7 @@ resource "openstack_images_image_v2" "ubuntu20-10" {
   container_format = "bare"
   disk_format      = "qcow2"
   visibility       = "public"
+  # protected        = true
   web_download     = true
 
   properties = {
@@ -72,6 +77,7 @@ resource "openstack_images_image_v2" "fedora33" {
   container_format = "bare"
   disk_format      = "qcow2"
   visibility       = "public"
+  # protected        = true
   web_download     = true
 
   properties = {
@@ -86,6 +92,7 @@ resource "openstack_images_image_v2" "fedora_atomic" {
   container_format = "bare"
   disk_format      = "qcow2"
   visibility       = "public"
+  # protected        = true
   web_download     = true
 
   properties = {
@@ -99,6 +106,7 @@ resource "openstack_images_image_v2" "fedora_atomic" {
 #   container_format = "bare"
 #   disk_format      = "qcow2"
 #   visibility       = "public"
+#   # protected        = true
 #   web_download     = true
 
 #   properties = {
