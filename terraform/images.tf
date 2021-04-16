@@ -7,7 +7,7 @@ resource "openstack_images_image_v2" "rancheros" {
   disk_format      = "qcow2"
   visibility       = "public"
   # protected        = true
-  web_download     = true
+  web_download = true
 
   properties = {
     usage = "kubernetes"
@@ -22,7 +22,7 @@ resource "openstack_images_image_v2" "cirros" {
   disk_format      = "qcow2"
   visibility       = "public"
   # protected        = true
-  web_download     = true
+  web_download = true
 
   properties = {
     usage = "testing"
@@ -36,7 +36,7 @@ resource "openstack_images_image_v2" "ubuntu18-04" {
   disk_format      = "qcow2"
   visibility       = "public"
   # protected        = true
-  web_download     = true
+  web_download = true
 
   properties = {
     usage = "common"
@@ -50,7 +50,7 @@ resource "openstack_images_image_v2" "ubuntu20-04" {
   disk_format      = "qcow2"
   visibility       = "public"
   # protected        = true
-  web_download     = true
+  web_download = true
 
   properties = {
     usage = "common"
@@ -64,7 +64,7 @@ resource "openstack_images_image_v2" "ubuntu20-10" {
   disk_format      = "qcow2"
   visibility       = "public"
   # protected        = true
-  web_download     = true
+  web_download = true
 
   properties = {
     usage = "common"
@@ -78,7 +78,7 @@ resource "openstack_images_image_v2" "fedora33" {
   disk_format      = "qcow2"
   visibility       = "public"
   # protected        = true
-  web_download     = true
+  web_download = true
 
   properties = {
     usage = "kubernetes"
@@ -93,10 +93,11 @@ resource "openstack_images_image_v2" "fedora_atomic" {
   disk_format      = "qcow2"
   visibility       = "public"
   # protected        = true
-  web_download     = true
+  web_download = true
 
   properties = {
-    usage = "kubernetes"
+    usage     = "kubernetes"
+    os_distro = "fedora-atomic"
   }
 }
 
