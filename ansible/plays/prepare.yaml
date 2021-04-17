@@ -8,3 +8,21 @@
     - name: common/sudoers
       vars:
         security_sudoers_passwordless: ["jakoberpf"]
+
+  tasks:
+
+    - name: Install packages only when the apt process is not locked
+      apt:
+        update_cache: yes        
+        pkg:
+          - git 
+          - make 
+          - nano 
+          - htop 
+          - curl
+          - net-tools
+          - timeshift
+        state: present
+      register: apt_action
+      retries: 100
+      until: apt_action is success or ('Failed to lock apt for exclusive operation' not in apt_action.msg and '/var/lib/dpkg/lock' not in apt_action.msg)
