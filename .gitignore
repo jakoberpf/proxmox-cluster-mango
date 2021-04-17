@@ -7,3 +7,4 @@ terraform/logs/
 mount/
 terraform/.terraform.tfstate.lock.info
 terraform/files/logins
+ansible/.vault_pass
