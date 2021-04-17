@@ -1,0 +1,81 @@
+---
+## Command
+# ansible-playbook -i hosts plays/setup_loadbalancer.yml --private-key=./.ssh/id_rsa_loadbalancer
+
+- name: Setup haproxy as loadbalancer in high aviability with keepalived
+  hosts: leaders
+  remote_user: ubuntu
+
+  vars:
+
+    - inventory_groupname: "{{ hostvars[inventory_hostname].group_names[0] }}"
+
+  roles:
+
+    - name: high_availability/haproxy
+    - name: high_availability/keepalived
+
+  tasks:
+
+    # TODO: intergrate into role
+    # haproxy -c -V -f /etc/haproxy/haproxy.cfg
+    - name: Create haproxy.cfg
+      become: true
+      blockinfile:
+        path: /etc/haproxy/haproxy.cfg
+        block: |
+        
+            ############## Configure ectd loadbalancer #############
+            frontend etcd_frontend
+                    mode tcp
+                    bind {{ cluster_ip }}:{{ cluster_port_etcd }}
+                    option tcplog
+                    default_backend etcd_backend
+
+            backend etcd_backend
+                    mode tcp
+                    option tcp-check
+                    balance roundrobin
+                    {% for item in groups[inventory_groupname] %}
+                    server {{ hostvars[item].ansible_hostname }} {{ hostvars[item]['ansible_' + cluster_interface].ipv4.address }}:2379 check fall 3 rise 2
+                    {% endfor %}
+
+            ############## Configure kubernetes loadbalancer #############
+            frontend kubernetes_frontend
+                    mode tcp
+                    bind {{ cluster_ip }}:{{ cluster_port_kubernetes }}
+
+                    # Add headers for SSL offloading
+                    # http-request set-header X-Forwarded-Proto https if { ssl_fc }
+                    # http-request set-header X-Forwarded-Ssl on if { ssl_fc }
+
+                    option tcplog
+                    default_backend kubernetes_backend
+
+            backend kubernetes_backend
+                    mode tcp
+                    balance roundrobin
+
+                    option tcplog
+                    option tcp-check
+                    
+                    option httpchk GET /healthz
+                    http-check expect status 200
+
+                    option ssl-hello-chk
+
+                    default-server inter 10s downinter 5s rise 2 fall 2 slowstart 60s maxconn 250 maxqueue 256 weight 100
+                    {% for item in groups[inventory_groupname] %}
+                    server {{ hostvars[item].ansible_hostname }} {{ hostvars[item]['ansible_' + cluster_interface].ipv4.address }}:6443 check
+                    {% endfor %}
+
+            listen stats
+                    bind {{ cluster_ip }}:8181
+                    stats enable                    # enable statistics reports  
+                    stats hide-version              # Hide the version of HAProxy
+                    stats refresh 5s                # HAProxy refresh time
+                    stats show-node                 # Shows the hostname of the node
+                    stats auth admin:admin          # Enforce Basic authentication for stats page
+                    stats uri /stats                # Statistics URL
+
+        state: present

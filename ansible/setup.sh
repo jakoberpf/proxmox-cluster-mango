@@ -1,4 +1,4 @@
-sudo apt install git make nano htop curl net-tools
+# sudo apt install git make nano htop curl net-tools
 # (https://dev.to/rahedmir/how-to-use-timeshift-from-command-line-in-linux-1l9b)
 # (https://github.com/teejee2008/timeshift)
 sudo apt-get install timeshift
@@ -92,6 +92,8 @@ kolla-ansible -i all-in-one prechecks
 kolla-ansible -i all-in-one deploy
 kolla-ansible -i all-in-one post-deploy
 kolla-ansible -i all-in-one check
+
+kolla-ansible -i all-in-one reconfigure
 
 
 # (https://docs.openstack.org/mitaka/config-reference/firewalls-default-ports.html)
