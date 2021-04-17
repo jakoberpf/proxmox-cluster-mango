@@ -101,6 +101,21 @@ resource "openstack_images_image_v2" "fedora_atomic" {
   }
 }
 
+resource "openstack_images_image_v2" "fedora_coreos" {
+  name             = "ffedora-coreos"
+  image_source_url = "https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/33.20210328.3.0/x86_64/fedora-coreos-33.20210328.3.0-openstack.x86_64.qcow2.xz"
+  container_format = "bare"
+  disk_format      = "qcow2"
+  visibility       = "public"
+  # protected        = true
+  web_download = true
+
+  properties = {
+    usage     = "kubernetes"
+    os_distro = "fedora-coreos"
+  }
+}
+
 # resource "openstack_images_image_v2" "coreos" {
 #   name             = "CoreOS"
 #   image_source_url = "http://stable.release.core-os.net/amd64-usr/current/coreos_production_openstack_image.img.bz2"
