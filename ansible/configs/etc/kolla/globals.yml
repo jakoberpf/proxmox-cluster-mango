@@ -5,6 +5,11 @@
 # commented parameters are shown here, To override the default value uncomment
 # the parameter and change its value.
 
+################
+# Custom options
+################
+##enable_cluster_user_trust: true # because of https://docs.openstack.org/kolla-ansible/latest/reference/containers/magnum-guide.html
+
 ###############
 # Kolla options
 ###############
@@ -272,7 +277,7 @@ enable_haproxy: "yes"
 #enable_ceilometer: "no"
 #enable_ceilometer_ipmi: "no"
 #enable_cells: "no"
-#enable_central_logging: "no"
+enable_central_logging: "yes" # https://docs.openstack.org/kolla-ansible/latest/reference/logging-and-monitoring/central-logging-guide.html
 #enable_chrony: "yes"
 enable_cinder: "yes"
 #enable_cinder_backup: "yes"
@@ -287,7 +292,7 @@ enable_cinder_backend_lvm: "yes"
 #enable_cyborg: "no"
 #enable_designate: "no"
 #enable_destroy_images: "no"
-#enable_elasticsearch: "{{ 'yes' if enable_central_logging | bool or enable_osprofiler | bool or enable_skydive | bool or enable_monasca | bool else 'no' }}"
+enable_elasticsearch: "{{ 'yes' if enable_central_logging | bool or enable_osprofiler | bool or enable_skydive | bool or enable_monasca | bool else 'no' }}"
 #enable_elasticsearch_curator: "no"
 #enable_etcd: "no"
 #enable_fluentd: "yes"
@@ -304,7 +309,7 @@ enable_heat: "yes" # "{{ enable_openstack_core | bool }}"
 #enable_horizon_heat: "{{ enable_heat | bool }}"
 #enable_horizon_ironic: "{{ enable_ironic | bool }}"
 #enable_horizon_karbor: "{{ enable_karbor | bool }}"
-enable_horizon_magnum: "{{ enable_magnum | bool }}"
+##enable_horizon_magnum: "{{ enable_magnum | bool }}"
 #enable_horizon_manila: "{{ enable_manila | bool }}"
 #enable_horizon_masakari: "{{ enable_masakari | bool }}"
 #enable_horizon_mistral: "{{ enable_mistral | bool }}"
@@ -330,9 +335,9 @@ enable_horizon_magnum: "{{ enable_magnum | bool }}"
 #enable_iscsid: "{{ (enable_cinder | bool and enable_cinder_backend_iscsi | bool) or enable_ironic | bool }}"
 #enable_karbor: "no"
 #enable_kafka: "{{ enable_monasca | bool }}"
-#enable_kibana: "{{ 'yes' if enable_central_logging | bool or enable_monasca | bool else 'no' }}"
+enable_kibana: "{{ 'yes' if enable_central_logging | bool or enable_monasca | bool else 'no' }}"
 #enable_kuryr: "no"
-enable_magnum: "yes"
+##enable_magnum: "yes"
 #enable_manila: "no"
 #enable_manila_backend_generic: "no"
 #enable_manila_backend_hnas: "no"
