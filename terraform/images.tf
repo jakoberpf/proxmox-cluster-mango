@@ -102,7 +102,7 @@ resource "openstack_images_image_v2" "fedora_atomic" {
 }
 
 resource "openstack_images_image_v2" "fedora_coreos" {
-  name             = "ffedora-coreos"
+  name             = "fedora-coreos"
   image_source_url = "https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/33.20210328.3.0/x86_64/fedora-coreos-33.20210328.3.0-openstack.x86_64.qcow2.xz"
   container_format = "bare"
   disk_format      = "qcow2"
