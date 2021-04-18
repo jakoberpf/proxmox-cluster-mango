@@ -45,17 +45,6 @@ sudo timeshift --create --comments "Zerotier Setup"
 # udp6       0      0 :::54257                :::*                                1055/avahi-daemon:  
 # udp6       0      0 :::5353                 :::*                                1055/avahi-daemon:  
 
-# https://docs.openstack.org/devstack/latest/
-# setup local.conf
-# ./stack.sh
-
-# OR
-
-# https://microstack.run/docs/single-node
-# sudo snap install microstack --beta --devmode
-# sudo microstack init --auto --control
-# sudo snap get microstack config.credentials.keystone-password
-
 # (https://docs.openstack.org/kolla-ansible/latest/user/quickstart.html)
 
 sudo apt install python3-dev python3-venv libffi-dev gcc libssl-dev git
@@ -78,14 +67,13 @@ cp $HOME/kolla-openstack/share/kolla-ansible/etc_examples/kolla/* /etc/kolla/
 cp $HOME/kolla-openstack/share/kolla-ansible/ansible/inventory/all-in-one .
 
 sudo apt install lvm2
-sudo pvcreate -f /dev/nvme0n1p3 
-sudo pvs
-sudo vgcreate -f cinder-volumes /dev/nvme0n1p3
-sudo vgs
+sudo vgremove cinder-volumes && sudo pvremove /dev/nvme0n1p3 
+sudo pvcreate -f /dev/nvme0n1p3 && sudo pvs
+sudo vgcreate -f cinder-volumes /dev/nvme0n1p3 && sudo vgs
 
 kolla-genpwd
 
-# Setpu globals.yaml
+# Setup globals.yaml
 source $HOME/kolla-openstack/bin/activate
 kolla-ansible -i all-in-one bootstrap-servers
 kolla-ansible -i all-in-one prechecks
@@ -100,7 +88,7 @@ kolla-ansible -i all-in-one reconfigure
 sudo ufw allow http       #
 sudo ufw allow https      #
 sudo ufw allow 873/tcp    # Rsync Endpoint
-sudo ufw allow 5000/tcp   # Identity service public endpoint
+sudo ufw allow 5000/tcp   # Keystone Identity Service (public endpoint)
 sudo ufw allow 8776/tcp   #
 sudo ufw allow 8774/tcp   #
 sudo ufw allow 8386/tcp   #
