@@ -1,2 +1,2 @@
 [machine]
-10.147.19.88
+10.147.19.88 ansible_user=jakoberpf
