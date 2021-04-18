@@ -1,7 +1,6 @@
 ---
 - name: Preprare Development Machine
   hosts: machine
-  remote_user: jakoberpf
 
   roles:
 
@@ -11,16 +10,28 @@
 
   tasks:
 
-    - name: Install packages only when the apt process is not locked
+    - name:
+      become: yes
+      community.general.ufw:
+        rule: allow
+        name: OpenSSH
+
+    # - name: Allow everything and enable UFW
+    #   become: yes
+    #   community.general.ufw:
+    #     state: enabled
+
+    - name: Install basic packages
+      become: yes
       apt:
         update_cache: yes        
         pkg:
           - git 
-          - make 
+          # - make 
           - nano 
           - htop 
           - curl
-          - net-tools
+          # - net-tools
           - timeshift
         state: present
       register: apt_action
