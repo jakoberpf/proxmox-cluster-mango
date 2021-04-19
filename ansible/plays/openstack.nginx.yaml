@@ -1,0 +1,25 @@
+---
+- name: Preprare Development Machine
+  hosts: machine
+
+  vars:
+    openstack_ingress_ip: "10.147.19.245"
+    openstack_ingress_adress: openstack.dev.jakoberpf.de
+
+  tasks:
+
+    - name: Install nginx reverse proxy
+      become: yes
+      apt:    
+        pkg:
+          - nginx
+        state: present
+      register: apt_action
+      retries: 100
+      until: apt_action is success or ('Failed to lock apt for exclusive operation' not in apt_action.msg and '/var/lib/dpkg/lock' not in apt_action.msg)
+
+    - name: Create a DOS-style text file from a template
+      become: yes
+      ansible.builtin.template:
+        src: ../templates/nginx.openstack.j2
+        dest: "/etc/nginx/sites-available/{ openstack_ingress_adress }"
