@@ -27,11 +27,11 @@
         update_cache: yes        
         pkg:
           - git 
-          # - make 
           - nano 
           - htop 
           - curl
-          # - net-tools
+          - vino
+          - snapd
           - timeshift
         state: present
       register: apt_action
