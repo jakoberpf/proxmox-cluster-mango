@@ -18,8 +18,28 @@
       retries: 100
       until: apt_action is success or ('Failed to lock apt for exclusive operation' not in apt_action.msg and '/var/lib/dpkg/lock' not in apt_action.msg)
 
-    - name: Create a DOS-style text file from a template
+    - name: Create the nginx config for {{ openstack_ingress_adress }}
       become: yes
       ansible.builtin.template:
         src: ../templates/nginx.openstack.j2
         dest: "/etc/nginx/sites-available/{{ openstack_ingress_adress }}"
+      register: config
+
+    - name: Create a symbolic link for {{ openstack_ingress_adress }}
+      become: yes
+      ansible.builtin.file:
+        src: "/etc/nginx/sites-available/{{ openstack_ingress_adress }}"
+        dest: "/etc/nginx/sites-enabled/{{ openstack_ingress_adress }}"
+        state: link
+
+    - name: Remove system link of default config
+      become: yes
+      ansible.builtin.file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+
+    - name: Restart service httpd, in all cases
+      ansible.builtin.service:
+        name: httpd
+        state: restarted
+      when: config.changed
