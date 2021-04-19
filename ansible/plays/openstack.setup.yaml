@@ -19,7 +19,7 @@
       retries: 100
       until: apt_action is success or ('Failed to lock apt for exclusive operation' not in apt_action.msg and '/var/lib/dpkg/lock' not in apt_action.msg)
 
-    - name: Add IP address of all hosts to all hosts
+    - name: Add openstack VIP and address to /etc/hosts
       become: yes
       lineinfile:
         dest: /etc/hosts

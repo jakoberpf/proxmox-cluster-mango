@@ -1,0 +1,9 @@
+# sudo apt install git make nano htop curl net-tools
+# (https://dev.to/rahedmir/how-to-use-timeshift-from-command-line-in-linux-1l9b)
+# (https://github.com/teejee2008/timeshift)
+sudo apt-get install timeshift
+sudo timeshift --snapshot-device /dev/sdX
+sudo timeshift --btrfs
+sudo btrfs quota enable /
+
+sudo timeshift --create --comments "A clean ubuntu install with basic packages"

@@ -1,5 +1,5 @@
 ---
-- name: Preprare Development Machine
+- name: Install and configure NGINX
   hosts: machine
 
   vars:

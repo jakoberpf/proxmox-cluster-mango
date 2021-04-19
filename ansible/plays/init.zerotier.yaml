@@ -15,6 +15,14 @@
   tasks:
 
 
+curl -s https://install.zerotier.com | sudo bash
+sudo zerotier-cli join <id>
+
+sudo netstat -tulpn
+
+sudo timeshift --create --comments "Zerotier is installed and configured"
+
+
         # https://www.cloudqubes.com/hands-on/linux/setting-up-an-nginx-reverse-proxy-for-openstack/
 sudo apt-get install nginx
 
