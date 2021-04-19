@@ -1,0 +1,4 @@
+sudo apt install lvm2
+sudo vgremove cinder-volumes && sudo pvremove /dev/nvme0n1p3 
+sudo pvcreate -f /dev/nvme0n1p3 && sudo pvs
+sudo vgcreate -f cinder-volumes /dev/nvme0n1p3 && sudo vgs

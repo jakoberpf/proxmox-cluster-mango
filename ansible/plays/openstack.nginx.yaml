@@ -7,10 +7,9 @@
     openstack_ingress_adress: openstack.dev.jakoberpf.de
 
   tasks:
-
     - name: Install nginx reverse proxy
       become: yes
-      apt:    
+      apt:
         pkg:
           - nginx
         state: present

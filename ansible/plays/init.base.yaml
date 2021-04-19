@@ -3,13 +3,11 @@
   hosts: machine
 
   roles:
-
     - name: common/sudoers
       vars:
         security_sudoers_passwordless: ["jakoberpf"]
 
   tasks:
-
     - name:
       become: yes
       community.general.ufw:
@@ -24,11 +22,11 @@
     - name: Install basic packages
       become: yes
       apt:
-        update_cache: yes        
+        update_cache: yes
         pkg:
-          - git 
-          - nano 
-          - htop 
+          - git
+          - nano
+          - htop
           - curl
           - vino
           - snapd

@@ -3,16 +3,15 @@
   hosts: machine
 
   tasks:
-
     - name: Install packages only when the apt process is not locked
       become: yes
-      apt:    
+      apt:
         pkg:
-          - git 
+          - git
           - gcc
-          - python3-dev 
-          - python3-venv 
-          - libffi-dev 
+          - python3-dev
+          - python3-venv
+          - libffi-dev
           - libssl-dev
         state: present
       register: apt_action
@@ -23,7 +22,7 @@
       become: yes
       lineinfile:
         dest: /etc/hosts
-        regexp: '.*openstack.dev.jakoberpf.de$'
+        regexp: ".*openstack.dev.jakoberpf.de$"
         line: "192.168.0.200 openstack.dev.jakoberpf.de"
         state: present
 
@@ -81,12 +80,10 @@
         remote_src: yes
         src: $HOME/kolla-openstack/share/kolla-ansible/ansible/inventory/all-in-one
         dest: .
-
     # source $HOME/kolla-openstack/bin/activate
     # kolla-ansible -i all-in-one bootstrap-servers
     # kolla-ansible -i all-in-one prechecks
     # kolla-ansible -i all-in-one deploy
     # kolla-ansible -i all-in-one post-deploy
     # kolla-ansible -i all-in-one check
-
     # kolla-ansible -i all-in-one reconfigure
