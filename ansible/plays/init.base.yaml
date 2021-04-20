@@ -1,11 +1,6 @@
 ---
-- name: Preprare Development Machine
+- name: Preprare the development machine with basic settings, packages and networking
   hosts: machine
-
-  roles:
-    - name: common/sudoers
-      vars:
-        security_sudoers_passwordless: ["jakoberpf"]
 
   tasks:
     - name: Install basic packages
@@ -36,6 +31,11 @@
     #   community.general.ufw:
     #     state: enabled
 
+  roles:
+    - name: common/sudoers
+      vars:
+        security_sudoers_passwordless: ["jakoberpf"]
+
     - role: networking/netplan
       netplan_enabled: true
       netplan_configuration:
@@ -45,13 +45,13 @@
             enp5s0: # The 1Gbit/s Interface
               dhcp4: no
               dhcp6: no
-              addresses: 192.168.2.199
+              addresses: 
+                  - 192.168.2.199/22
               gateway4: 192.168.1.1
               nameservers:
-                  addresses: 
-                    - 1.1.1.1
-                    - 8.8.8.8
-            enp9s0: # The 10Gbit/s Interface
+                addresses:
+                  - 1.1.1.1
+                  - 8.8.8.8
+            enp9s0: # T he 10Gbit/s Interface
               dhcp4: no
               dhcp6: no
-              addresses: 

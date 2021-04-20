@@ -1,2 +1,2 @@
 [machine]
-development-machine ansible_host=10.147.19.245 ansible_user=jakoberpf
+development-machine ansible_host=192.168.2.199 ansible_user=jakoberpf
