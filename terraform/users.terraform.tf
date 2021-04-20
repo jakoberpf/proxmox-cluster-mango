@@ -18,7 +18,7 @@ resource "openstack_identity_user_v3" "terraform_dev" {
 resource "openstack_identity_role_assignment_v3" "role_assignment_terraform_dev" {
   user_id    = openstack_identity_user_v3.terraform_dev.id
   project_id = openstack_identity_project_v3.dev.id
-  role_id    = "568552d0706746f3aab0352aeb1606a9"
+  role_id    = openstack_identity_role_v3.admin.id
 }
 
 resource "openstack_identity_user_v3" "terraform_test" {
@@ -34,5 +34,5 @@ resource "openstack_identity_user_v3" "terraform_test" {
 resource "openstack_identity_role_assignment_v3" "role_assignment_terraform_test" {
   user_id    = openstack_identity_user_v3.terraform_test.id
   project_id = openstack_identity_project_v3.test.id
-  role_id    = "568552d0706746f3aab0352aeb1606a9"
+  role_id    = openstack_identity_role_v3.admin.id
 }
