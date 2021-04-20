@@ -1,9 +1,21 @@
-# sudo apt install git make nano htop curl net-tools
-# (https://dev.to/rahedmir/how-to-use-timeshift-from-command-line-in-linux-1l9b)
-# (https://github.com/teejee2008/timeshift)
-sudo apt-get install timeshift
-sudo timeshift --snapshot-device /dev/sdX
-sudo timeshift --btrfs
-sudo btrfs quota enable /
+---
+- name: Preprare the development machine with basic settings, packages and networking
+  hosts: machine
 
-sudo timeshift --create --comments "A clean ubuntu install with basic packages"
+  tasks:
+    # - name: Setup timeshift snapshot device
+    #   become: yes
+    #   shell: timeshift --snapshot-device /dev/sdX
+
+    # - name: Setup timeshift snapshot device
+    #   become: yes
+    #   shell: timeshift --btrfs
+
+    # - name: Setup timeshift snapshot device
+    #   become: yes
+    #   shell: btrfs quota enable /
+
+    # - name: Setup timeshift snapshot device
+    #   become: yes
+    #   shell: timeshift --create --comments "A clean Ubuntu 20.04.2LTS install with basic packages and settings"
+
