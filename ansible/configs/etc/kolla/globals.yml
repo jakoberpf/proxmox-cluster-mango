@@ -316,7 +316,7 @@ enable_horizon_magnum: "{{ enable_magnum | bool }}"
 #enable_horizon_monasca: "{{ enable_monasca | bool }}"
 #enable_horizon_murano: "{{ enable_murano | bool }}"
 #enable_horizon_neutron_vpnaas: "{{ enable_neutron_vpnaas | bool }}"
-#enable_horizon_octavia: "{{ enable_octavia | bool }}"
+enable_horizon_octavia: "{{ enable_octavia | bool }}"
 #enable_horizon_qinling: "{{ enable_qinling | bool }}"
 #enable_horizon_sahara: "{{ enable_sahara | bool }}"
 #enable_horizon_searchlight: "{{ enable_searchlight | bool }}"
@@ -364,7 +364,7 @@ enable_neutron_provider_networks: "yes"
 #enable_neutron_port_forwarding: "no"
 #enable_nova_serialconsole_proxy: "no"
 #enable_nova_ssh: "yes"
-#enable_octavia: "no"
+enable_octavia: "yes"
 #enable_openvswitch: "{{ enable_neutron | bool and neutron_plugin_agent != 'linuxbridge' }}"
 #enable_ovn: "{{ enable_neutron | bool and neutron_plugin_agent == 'ovn' }}"
 #enable_ovs_dpdk: "no"
@@ -770,3 +770,8 @@ nova_compute_virt_type: "kvm"
 #octavia_amp_boot_network_list:
 #octavia_amp_secgroup_list:
 #octavia_amp_flavor_id:
+
+octavia_certs_country: DE
+octavia_certs_state: Bavaria
+octavia_certs_organization: Erpf
+octavia_certs_organizational_unit: Octavia
