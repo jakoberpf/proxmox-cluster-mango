@@ -86,4 +86,5 @@
     # kolla-ansible -i all-in-one deploy
     # kolla-ansible -i all-in-one post-deploy
     # kolla-ansible -i all-in-one check
+    # after doing changes to config
     # kolla-ansible -i all-in-one reconfigure
