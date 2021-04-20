@@ -1,11 +1,3 @@
-# data "openstack_identity_group_v3" "developer_testing" {
-#   name = "developer-testing"
-# }
-
-# data "openstack_identity_group_v3" "developer_development" {
-#   name = "developer-development"
-# }
-
 resource "random_password" "developers" {
   count            = 2
   length           = 16
