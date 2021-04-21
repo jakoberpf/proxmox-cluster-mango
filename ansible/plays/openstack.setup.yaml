@@ -89,9 +89,14 @@
     # after doing changes to config
     # kolla-ansible -i all-in-one reconfigure
 
+    # generate octavia-certificate-generate
+
     # https://docs.openstack.org/kolla-ansible/latest/reference/networking/octavia.html
     # https://docs.openstack.org/octavia/ussuri/admin/guides/certificates.html
     # https://fkpwolf.net/cloud/setup/2018/11/28/install-openstack-by-kolla.html
     # http://www.panticz.de/kolla-ansible
     # https://shreddedbacon.com/post/openstack-kolla/
     # https://superuser.openstack.org/articles/guide-octavia-ingress-controller-for-kubernetes/
+    # https://www.headdesk.me/Install_Octavia_software_load_balancer_for_openstack
+    # https://cloudbase.it/openstack-on-arm64-lbaas/
+    # https://openstack.nimeyo.com/101221/openstack-neutron-lbaasv2-octavia-able-create-loadbalancer
