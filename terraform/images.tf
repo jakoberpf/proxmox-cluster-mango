@@ -116,6 +116,29 @@ resource "openstack_images_image_v2" "fedora_coreos" {
   }
 }
 
+# resource "openstack_images_image_v2" "amphora_test" {
+#   name             = "amphora"
+#   local_file_path  = "./images/test-only-amphora-x64-haproxy-ubuntu-bionic.qcow2"
+#   container_format = "bare"
+#   disk_format      = "qcow2"
+#   visibility       = "shared"
+#   # owner = "11b5e40d3c304ab090af75144559c632"
+#   # protected        = true
+
+#   properties = {
+#     os_distro     = "ubuntu",
+#     # os_admin_user = "ubuntu",
+#     os_version    = "18.04",
+#   }
+
+#   tags = ["amphora"]
+# }
+
+# resource "openstack_images_image_access_v2" "rancheros_member" {
+#   image_id  = openstack_images_image_v2.amphora_test.id
+#   member_id = "11b5e40d3c304ab090af75144559c632"
+# }
+
 # resource "openstack_images_image_v2" "coreos" {
 #   name             = "CoreOS"
 #   image_source_url = "http://stable.release.core-os.net/amd64-usr/current/coreos_production_openstack_image.img.bz2"
