@@ -155,3 +155,16 @@ server {
         proxy_pass http://{{ openstack_ingress_adress }}:9511;
   }
 }
+
+# octavia
+server {
+    listen {{ openstack_ingress_ip }}:9876;
+    server_name {{ openstack_ingress_adress }}; 
+
+    access_log /var/log/nginx/reverse-access.log;
+    error_log /var/log/nginx/reverse-error.log;
+
+    location / {
+        proxy_pass http://{{ openstack_ingress_adress }}:9876;
+  }
+}
