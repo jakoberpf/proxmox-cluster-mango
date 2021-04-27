@@ -1,0 +1,12 @@
+# https
+server {
+    listen {{ ceph_ingress_ip }}:8443;
+    server_name {{ ceph_ingress_adress }}; 
+
+    access_log /var/log/nginx/reverse-access.log;
+    error_log /var/log/nginx/reverse-error.log;
+
+    location / {
+        proxy_pass https://{{ ceph_ingress_adress }}:8443;
+  }
+}

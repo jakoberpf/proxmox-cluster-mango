@@ -1,0 +1,52 @@
+---
+- name: Install and configure NGINX
+  hosts: machine
+
+  vars:
+    ceph_ingress_ip: "10.147.19.197"
+    ceph_ingress_adress: ceph.dev.jakoberpf.de
+
+  tasks:
+    - name: Install nginx reverse proxy
+      become: yes
+      apt:
+        pkg:
+          - nginx
+        state: present
+      register: apt_action
+      retries: 100
+      until: apt_action is success or ('Failed to lock apt for exclusive operation' not in apt_action.msg and '/var/lib/dpkg/lock' not in apt_action.msg)
+
+    - name: Add ceph monitor ip and address to /etc/hosts
+      become: yes
+      lineinfile:
+        dest: /etc/hosts
+        regexp: ".*ceph.dev.jakoberpf.de$"
+        line: "192.168.0.199 ceph.dev.jakoberpf.de"
+        state: present
+
+    - name: Create the nginx config for {{ ceph_ingress_adress }}
+      become: yes
+      ansible.builtin.template:
+        src: ../templates/nginx.ceph.j2
+        dest: "/etc/nginx/sites-available/{{ ceph_ingress_adress }}"
+      register: config
+
+    - name: Create a symbolic link for {{ ceph_ingress_adress }}
+      become: yes
+      ansible.builtin.file:
+        src: "/etc/nginx/sites-available/{{ ceph_ingress_adress }}"
+        dest: "/etc/nginx/sites-enabled/{{ ceph_ingress_adress }}"
+        state: link
+
+    - name: Remove system link of default config
+      become: yes
+      ansible.builtin.file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+
+    - name: Restart service nginx, if configuration changed
+      ansible.builtin.service:
+        name: nginx
+        state: restarted
+      when: config.changed
