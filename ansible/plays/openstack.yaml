@@ -1,0 +1,6 @@
+---
+- name: Include a play after another play
+  include: otherplays.yaml
+
+- name: Include a play after another play
+  include: otherplays.yaml
