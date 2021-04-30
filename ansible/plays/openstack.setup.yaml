@@ -80,6 +80,7 @@
         remote_src: yes
         src: $HOME/kolla-openstack/share/kolla-ansible/ansible/inventory/all-in-one
         dest: .
+        
     # source $HOME/kolla-openstack/bin/activate
     # kolla-ansible -i all-in-one bootstrap-servers
     # kolla-ansible -i all-in-one prechecks
