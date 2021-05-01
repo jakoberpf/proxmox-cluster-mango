@@ -91,6 +91,7 @@
     # kolla-ansible -i all-in-one reconfigure
 
     # generate octavia-certificate-generate
+    # /etc/kolla/config/octavia
 
     # https://docs.openstack.org/kolla-ansible/latest/reference/networking/octavia.html
     # https://docs.openstack.org/octavia/ussuri/admin/guides/certificates.html
