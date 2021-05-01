@@ -1,0 +1,158 @@
+# http
+server {
+    listen 10.147.19.88:80;
+    server_name openstack.dev.jakoberpf.de; 
+
+    access_log /var/log/nginx/reverse-access.log;
+    error_log /var/log/nginx/reverse-error.log;
+
+    location / {
+        proxy_pass http://openstack.dev.jakoberpf.de;
+  }
+}
+
+# https://www.cloudqubes.com/hands-on/linux/setting-up-an-nginx-reverse-proxy-for-openstack/
+# keystone
+server {
+    listen 10.147.19.88:5000;
+    server_name openstack.dev.jakoberpf.de; 
+
+    access_log /var/log/nginx/reverse-access.log;
+    error_log /var/log/nginx/reverse-error.log;
+
+    location / {
+        proxy_pass http://openstack.dev.jakoberpf.de:5000;
+  }
+}
+
+server {
+    listen 10.147.19.88:35357;
+    server_name openstack.dev.jakoberpf.de; 
+
+    access_log /var/log/nginx/reverse-access.log;
+    error_log /var/log/nginx/reverse-error.log;
+
+    location / {
+        proxy_pass http://openstack.dev.jakoberpf.de:35357;
+  }
+}
+
+# neutron
+server {
+    listen 10.147.19.88:9696;
+    server_name openstack.dev.jakoberpf.de; 
+
+    access_log /var/log/nginx/reverse-access.log;
+    error_log /var/log/nginx/reverse-error.log;
+
+    location / {
+        proxy_pass http://openstack.dev.jakoberpf.de:9696;
+  }
+}
+
+# nova
+server {
+    listen 10.147.19.88:8774;
+    server_name openstack.dev.jakoberpf.de; 
+
+    access_log /var/log/nginx/reverse-access.log;
+    error_log /var/log/nginx/reverse-error.log;
+
+    location / {
+        proxy_pass http://openstack.dev.jakoberpf.de:8774;
+  }
+}
+
+# heat
+server {
+    listen 10.147.19.88:8004;
+    server_name openstack.dev.jakoberpf.de; 
+
+    access_log /var/log/nginx/reverse-access.log;
+    error_log /var/log/nginx/reverse-error.log;
+
+    location / {
+        proxy_pass http://openstack.dev.jakoberpf.de:8004;
+  }
+}
+
+# cinder
+server {
+    listen 10.147.19.88:8776;
+    server_name openstack.dev.jakoberpf.de; 
+
+    access_log /var/log/nginx/reverse-access.log;
+    error_log /var/log/nginx/reverse-error.log;
+
+    location / {
+        proxy_pass http://openstack.dev.jakoberpf.de:8776;
+  }
+}
+
+# glance
+server {
+    listen 10.147.19.88:9292;
+    server_name openstack.dev.jakoberpf.de; 
+
+    # don't check client body size to allow image uploads #
+    client_max_body_size 0;
+
+    access_log /var/log/nginx/reverse-access.log;
+    error_log /var/log/nginx/reverse-error.log;
+
+    location / {
+        proxy_pass http://openstack.dev.jakoberpf.de:9292;
+  }
+}
+
+# console
+server {
+    listen 10.147.19.88:6080;
+    server_name openstack.dev.jakoberpf.de; 
+
+    access_log /var/log/nginx/reverse-access.log;
+    error_log /var/log/nginx/reverse-error.log;
+
+    location / {
+        proxy_pass http://openstack.dev.jakoberpf.de:6080;
+  }
+}
+
+# kibana
+server {
+    listen 10.147.19.88:5601;
+    server_name openstack.dev.jakoberpf.de; 
+
+    access_log /var/log/nginx/reverse-access.log;
+    error_log /var/log/nginx/reverse-error.log;
+
+    location / {
+        proxy_pass http://openstack.dev.jakoberpf.de:5601;
+  }
+}
+
+# elasticsearch
+server {
+    listen 10.147.19.88:9200;
+    server_name openstack.dev.jakoberpf.de; 
+
+    access_log /var/log/nginx/reverse-access.log;
+    error_log /var/log/nginx/reverse-error.log;
+
+    location / {
+        proxy_pass http://openstack.dev.jakoberpf.de:9200;
+  }
+}
+
+# magnum
+server {
+    listen 10.147.19.88:9511;
+    server_name openstack.dev.jakoberpf.de; 
+
+    access_log /var/log/nginx/reverse-access.log;
+    error_log /var/log/nginx/reverse-error.log;
+
+    location / {
+        proxy_pass http://openstack.dev.jakoberpf.de:9511;
+  }
+}
