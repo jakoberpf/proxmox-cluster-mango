@@ -19,7 +19,7 @@
     - { path: "{{ octavia_cert_dir }}/client_ca", mode: "0750" }
     - { path: "{{ octavia_cert_dir }}/server_ca", mode: "0750" }
     - { path: "{{ octavia_cert_dir }}/server_ca/certs", mode: "0750" }
-    - { path: "{{ octavia_cert_dir }}/server_ca/crl", mode: "0750" }
+    - { path: "{{ octavia_cert_dir }}/server_ca/csr", mode: "0750" }
     - { path: "{{ octavia_cert_dir }}/server_ca/newcerts", mode: "0750" }
     - { path: "{{ octavia_cert_dir }}/server_ca/private", mode: "0700" }
 
@@ -62,7 +62,6 @@
     -out {{ octavia_ca_certificate }} \
     -subj {{ octavia_cert_server_ca_subject }} \
 
-
   # chmod 400 private/ca.key.pem
 - name: Generate client certificate
   block:
@@ -72,49 +71,40 @@
         passphrase: "{{ octavia_cert_client_password }}"
         cipher: "{{ octavia_cert_cipher_client }}"
         size: "{{ octavia_cert_key_length_client }}"
-        
-#     - name: Create client CA certificate
-#       command: >
-#         openssl req -x509 -passin pass:'{{ octavia_cert_client_password }}' -new -nodes -key {{ octavia_client_ca_key }}  \
-#         -config {{ octavia_cert_dir }}/openssl.cnf \
-#         -subj "{{ octavia_cert_client_ca_subject }}" \
-#         -days {{ octavia_cert_validity_days }} \
-#         -out {{ octavia_client_ca }}
-#       args:
-#         chdir: "{{ octavia_cert_dir }}"
-#         creates: "{{ octavia_client_ca }}"
 
-# - name: Generate Octavia client certificate
-#   block:
-#     - name: Create the client cert private key
-#       openssl_privatekey:
-#         path: "{{ octavia_cert_dir }}/client.key"
-#         size: "{{ octavia_cert_key_length_client }}"
+- name: Create client CA certificate
+  command: >
+    openssl req -x509 -passin pass:'{{ octavia_cert_client_password }}' -new -nodes -key {{ octavia_client_ca_key }}  \
+    -config {{ octavia_cert_dir }}/openssl.cnf \
+    -subj "{{ octavia_cert_client_ca_subject }}" \
+    -days {{ octavia_cert_validity_days }} \
+    -out {{ octavia_client_ca }}
 
-#     - name: Create client cert CSR
-#       openssl_csr:
-#         path: "{{ octavia_cert_dir }}/client.csr"
-#         common_name: "{{ octavia_cert_client_req_common_name }}"
-#         country_name: "{{ octavia_cert_client_req_country_name }}"
-#         state_or_province_name: "{{ octavia_cert_client_req_state_or_province_name }}"
-#         locality_name: "{{ octavia_cert_client_req_locality_name }}"
-#         organization_name: "{{ octavia_cert_client_req_organization_name }}"
-#         privatekey_path: "{{ octavia_cert_dir }}/client.key"
+- name: Create client CA certificate
+  command: >
+    openssl req -x509 -passin pass:'{{ octavia_cert_client_password }}' -new -nodes -key {{ octavia_client_ca_key }}  \
+    -config {{ octavia_cert_dir }}/openssl.cnf \
+    -subj "{{ octavia_cert_client_ca_subject }}" \
+    -days {{ octavia_cert_validity_days }} \
+    -out {{ octavia_client_ca }}
 
-#     - name: Create client certificate
-#       command: >
-#         openssl ca -passin pass:'{{ octavia_ca_private_key_passphrase }}' -config {{ octavia_cert_dir }}/openssl.cnf \
-#         -in client.csr -days {{ octavia_cert_validity_days }} -out client-.pem -batch
-#       args:
-#         chdir: "{{ octavia_cert_dir }}"
-#         creates: "{{ octavia_cert_dir }}/client-.pem"
+# openssl ca -config ../openssl.cnf -extensions usr_cert -days 7300 -notext -md sha256 -in csr/client.csr.pem -out certs/client.cert.pem
+# - name: Create client cert CSR
+#   openssl_csr:
+#     path: "{{ octavia_cert_dir }}/client.csr"
+#     common_name: "{{ octavia_cert_client_req_common_name }}"
+#     country_name: "{{ octavia_cert_client_req_country_name }}"
+#     state_or_province_name: "{{ octavia_cert_client_req_state_or_province_name }}"
+#     locality_name: "{{ octavia_cert_client_req_locality_name }}"
+#     organization_name: "{{ octavia_cert_client_req_organization_name }}"
+#     privatekey_path: "{{ octavia_cert_dir }}/client.key"
 
-#     # use cat to avoid mangling the certs
-#     - name: Generate single pem client.pem
-#       shell: "cat client-.pem client.key >{{ octavia_client_cert }}"
-#       args:
-#         chdir: "{{ octavia_cert_dir }}"
-#         creates: "{{ octavia_client_cert }}"
-#       tags:
-#           - skip_ansible_lint
+# # use cat to avoid mangling the certs
+# - name: Generate single pem client.pem
+#   shell: "cat client-.pem client.key >{{ octavia_client_cert }}"
+#   args:
+#     chdir: "{{ octavia_cert_dir }}"
+#     creates: "{{ octavia_client_cert }}"
+#   tags:
+#       - skip_ansible_lint
 

@@ -34,7 +34,7 @@ octavia_generate_certs: True
 
 # client certs
 octavia_client_ca_key: "{{ octavia_cert_dir }}/server_ca/private/client.key.pem"
-# octavia_client_ca: "{{ octavia_cert_dir }}/server_ca/private/client.key.pem"
+octavia_client_ca: "{{ octavia_cert_dir }}/server_ca/csr/client.csr.pem"
 # octavia_client_cert: "{{ octavia_cert_dir }}/client.pem"
 # server
 octavia_server_ca: "{{ octavia_ca_certificate }}"
