@@ -17,10 +17,10 @@
 # this directory needs to be accessible
 octavia_cert_dir: "artifacts/octavia"
 # octavia_cert_user: "{{ lookup('env', 'USER') }}"
-octavia_cert_key_length_server: '4096' # key length
 octavia_cert_cipher_server: 'auto'
-# octavia_cert_cipher_client: 'auto'
-# octavia_cert_key_length_client: '4096' # key length
+octavia_cert_key_length_server: '4096' # key length
+octavia_cert_cipher_client: 'auto'
+octavia_cert_key_length_client: '4096' # key length
 octavia_cert_server_ca_subject: '/C=DE/ST=Bavaria/L=Munich/O=Erpf/CN=www.erpf.de' # change this to something more real
 octavia_cert_client_ca_subject: '/C=DE/ST=Bavaria/L=Munich/O=Erpf/CN=www.erpf.de' # change this to something more real
 # octavia_cert_client_req_common_name: 'www.example.com' # change this to something more real
@@ -33,8 +33,8 @@ octavia_generate_client_cert: True # generate self signed client certs
 octavia_generate_certs: True
 
 # client certs
-# octavia_client_ca_key: "{{ octavia_cert_dir }}/ca_01.key"
-# octavia_client_ca: "{{ octavia_cert_dir }}/ca_01.pem"
+octavia_client_ca_key: "{{ octavia_cert_dir }}/server_ca/private/client.key.pem"
+# octavia_client_ca: "{{ octavia_cert_dir }}/server_ca/private/client.key.pem"
 # octavia_client_cert: "{{ octavia_cert_dir }}/client.pem"
 # server
 octavia_server_ca: "{{ octavia_ca_certificate }}"
