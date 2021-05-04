@@ -40,8 +40,8 @@
   hosts: machine
 
   tasks:
-		# git clone https://github.com/ceph/ceph-ansible.git
-		# git checkout $branch
+      # git clone https://github.com/ceph/ceph-ansible.git
+      # git checkout $branch
     - name: Install packages only when the apt process is not locked
       become: yes
       apt:
@@ -54,7 +54,7 @@
       retries: 100
       until: apt_action is success or ('Failed to lock apt for exclusive operation' not in apt_action.msg and '/var/lib/dpkg/lock' not in apt_action.msg)
 
-   - name: Setup virtual python enviroment for kolla openstack
+    - name: Setup virtual python enviroment for kolla openstack
       shell: python3 -m venv $HOME/ceph-ansible
 
     - name: Source virtual python env and install/update pip
@@ -62,4 +62,27 @@
       args:
         executable: /bin/bash
 
-		# pip install -r requirements.txt
+    - name: Source virtual python env and install/update pip
+      shell: source $HOME/ceph-ansible/bin/activate && pip install -r $HOME/ceph-ansible/requirements.txt
+      args:
+        executable: /bin/bash
+
+    - name: Copy site.yml
+      ansible.builtin.copy:
+        src: ../artifacts/ceph/site.yml
+        dest: $HOME/ceph-ansible/site.yml
+
+    - name: Copy inventory
+      ansible.builtin.copy:
+        src: ../artifacts/ceph/inventory
+        dest: $HOME/ceph-ansible/inventory
+
+    - name: Copy group_vars
+      ansible.builtin.copy:
+        src: "../artifacts/ceph/group_vars/{{ item }}"
+        dest: "$HOME/ceph-ansible/group_vars/{{ item }}"
+      with_items:
+        - all.yml
+        - osds.yml
+
+# ansible-playbook site.yaml -i hosts --connection=local
