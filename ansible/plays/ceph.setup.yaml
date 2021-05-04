@@ -83,6 +83,7 @@
         dest: "$HOME/ceph-ansible/group_vars/{{ item }}"
       with_items:
         - all.yml
+        - mons.yml
         - osds.yml
 
-# ansible-playbook site.yaml -i hosts --connection=local
+# ansible-playbook site.yaml -i inventory --connection=local
