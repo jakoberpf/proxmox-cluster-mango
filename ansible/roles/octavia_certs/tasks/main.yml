@@ -99,6 +99,9 @@
 #     organization_name: "{{ octavia_cert_client_req_organization_name }}"
 #     privatekey_path: "{{ octavia_cert_dir }}/client.key"
 
+# openssl rsa -in private/client.key.pem -out private/client.cert-and-key.pem
+# cat certs/client.cert.pem >> private/client.cert-and-key.pem
+
 # # use cat to avoid mangling the certs
 # - name: Generate single pem client.pem
 #   shell: "cat client-.pem client.key >{{ octavia_client_cert }}"
