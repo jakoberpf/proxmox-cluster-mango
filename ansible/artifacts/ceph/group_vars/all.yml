@@ -38,8 +38,8 @@
 #cluster: ceph
 
 # Inventory host group variables
-#mon_group_name: mons
-#osd_group_name: osds
+mon_group_name: mons
+osd_group_name: osds
 #rgw_group_name: rgws
 #mds_group_name: mdss
 #nfs_group_name: nfss
@@ -48,7 +48,7 @@
 #iscsi_gw_group_name: iscsigws
 #mgr_group_name: mgrs
 #rgwloadbalancer_group_name: rgwloadbalancers
-#monitoring_group_name: monitoring
+monitoring_group_name: mons
 
 # If configure_firewall is true, then ansible will try to configure the
 # appropriate firewalling rules so that Ceph daemons can communicate
