@@ -1,0 +1,10 @@
+---
+
+- name: Include basic initialisation
+  include: init.base.yaml
+
+- name: Include timeshift setup
+  include: init.timeshift.yaml
+
+- name: Include timeshift setup
+  include: init.timeshift.yaml
