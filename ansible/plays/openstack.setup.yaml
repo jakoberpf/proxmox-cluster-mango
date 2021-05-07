@@ -78,14 +78,14 @@
       local_action: stat path=../artifacts/kolla/passwords.yml
       register: stat_passwords_local
 
-    - name: Copy sample passwords
+    - name: Copy sample passwords to hosts
       become: yes
       ansible.builtin.copy:
         src: ../artifacts/kolla/passwords.sample.yml
         dest: /etc/kolla/passwords.yml
       when: not stat_passwords_remote.stat.exists and not stat_passwords_local.stat.exists
 
-    - name: Copy present passwords
+    - name: Copy present passwords to hosts
       become: yes
       ansible.builtin.copy:
         src: ../artifacts/kolla/passwords.yml
@@ -93,6 +93,12 @@
       when: stat_passwords_local.stat.exists
 
     # kolla-genpwd 
+
+    - name: Copy passwords to local machine
+      fetch:
+        flat: yes
+        src: /etc/kolla/passwords.yml
+        dest: ../artifacts/kolla/passwords.yml
 
     - name: Copy inventory
       ansible.builtin.copy:
@@ -133,6 +139,7 @@
         dest: /etc/kolla/config/octavia/client.cert-and-key.pem
         mode: 700
 
+    # Run all as sudo su
     # source $HOME/kolla-openstack/bin/activate
     # kolla-ansible -i all-in-one bootstrap-servers
     # kolla-ansible -i all-in-one prechecks
