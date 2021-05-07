@@ -66,13 +66,13 @@
     - name: Copy globals
       become: yes
       ansible.builtin.copy:
-        src: ../configs/etc/kolla/globals.yml
+        src: ../artifacts/kolla/globals.yml
         dest: /etc/kolla/globals.yml
 
     - name: Copy passwords
       become: yes
       ansible.builtin.copy:
-        src: ../configs/etc/kolla/passwords.yml
+        src: ../artifacts/kolla/passwords.sample.yml
         dest: /etc/kolla/passwords.yml
 
     - name: Copy inventory
