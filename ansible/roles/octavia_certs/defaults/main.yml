@@ -33,11 +33,13 @@ octavia_generate_client_cert: True # generate self signed client certs
 octavia_generate_certs: True
 
 # client certs
-octavia_client_ca_key: "{{ octavia_cert_dir }}/server_ca/private/client.key.pem"
-octavia_client_ca: "{{ octavia_cert_dir }}/server_ca/csr/client.csr.pem"
-# octavia_client_cert: "{{ octavia_cert_dir }}/client.pem"
-# server
-octavia_server_ca: "{{ octavia_ca_certificate }}"
+octavia_client_ca_key: "{{ octavia_cert_dir }}/client_ca/private/ca.key.pem"
+octavia_client_ca: "{{ octavia_cert_dir }}/client_ca/certs/ca.cert.pem"
+octavia_client_key: "{{ octavia_cert_dir }}/client_ca/private/client.key.pem"
+octavia_client_request: "{{ octavia_cert_dir }}/client_ca/csr/client.csr.pem"
+octavia_client_cert: "{{ octavia_cert_dir }}/client_ca/certs/client.cert.pem"
+# # server
+# octavia_server_ca: "{{ octavia_ca_certificate }}"
 # ca certs
 octavia_ca_private_key: "{{ octavia_cert_dir }}/server_ca/private/ca.key.pem"
 octavia_ca_private_key_passphrase: "{{ octavia_cert_client_password }}"
