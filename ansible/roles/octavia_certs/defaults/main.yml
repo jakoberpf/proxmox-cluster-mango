@@ -23,14 +23,17 @@ octavia_cert_cipher_client: 'auto'
 octavia_cert_key_length_client: '4096' # key length
 octavia_cert_server_ca_subject: '/C=DE/ST=Bavaria/L=Munich/O=Erpf/CN=www.erpf.de' # change this to something more real
 octavia_cert_client_ca_subject: '/C=DE/ST=Bavaria/L=Munich/O=Erpf/CN=www.erpf.de' # change this to something more real
-# octavia_cert_client_req_common_name: 'www.example.com' # change this to something more real
-# octavia_cert_client_req_country_name: 'DE'
-# octavia_cert_client_req_state_or_province_name: 'Bavaria'
-# octavia_cert_client_req_locality_name: 'Munich'
-octavia_cert_client_req_organization_name: 'Erpf'
+octavia_cert_client_req_common_name: 'www.erpf.de' # change this to something more real
+octavia_cert_client_req_country_name: 'DE'
+octavia_cert_client_req_state_or_province_name: 'Bavaria'
+octavia_cert_client_req_locality_name: 'Munich'
+octavia_cert_client_req_organization_name: 'Erpf Company'
+octavia_cert_client_req_organization_unit_name: 'Infrastructure'
+octavia_cert_client_req_email_address: 'admin@erpf.de'
 octavia_cert_validity_days: 1825 # 5 years
 octavia_generate_client_cert: True # generate self signed client certs
 octavia_generate_certs: True
+octavia_signing_digest: sha256
 
 # client certs
 octavia_client_ca_key: "{{ octavia_cert_dir }}/client_ca/private/ca.key.pem"
@@ -38,11 +41,8 @@ octavia_client_ca: "{{ octavia_cert_dir }}/client_ca/certs/ca.cert.pem"
 octavia_client_key: "{{ octavia_cert_dir }}/client_ca/private/client.key.pem"
 octavia_client_request: "{{ octavia_cert_dir }}/client_ca/csr/client.csr.pem"
 octavia_client_cert: "{{ octavia_cert_dir }}/client_ca/certs/client.cert.pem"
-# # server
-# octavia_server_ca: "{{ octavia_ca_certificate }}"
 # ca certs
 octavia_ca_private_key: "{{ octavia_cert_dir }}/server_ca/private/ca.key.pem"
 octavia_ca_private_key_passphrase: "{{ octavia_cert_client_password }}"
 octavia_ca_certificate: "{{ octavia_cert_dir }}/server_ca/certs/ca.cert.pem"
-octavia_signing_digest: sha256
 

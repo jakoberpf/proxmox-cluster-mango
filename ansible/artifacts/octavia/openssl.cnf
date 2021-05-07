@@ -66,13 +66,13 @@ commonName                      = Common Name
 emailAddress                    = Email Address
 
 # Optionally, specify some defaults.
-countryName_default             = US
-stateOrProvinceName_default     = Oregon
-localityName_default            =
-0.organizationName_default      = OpenStack
-organizationalUnitName_default  = Octavia
-emailAddress_default            =
-commonName_default              = example.org
+countryName_default             = DE
+stateOrProvinceName_default     = Bavaria
+localityName_default            = Munich
+0.organizationName_default      = Erpf Company
+organizationalUnitName_default  = Infrastructure
+emailAddress_default            = admin@erpf.de
+commonName_default              = www.erpf.de
 
 [ v3_ca ]
 # Extensions for a typical CA (`man x509v3_config`).

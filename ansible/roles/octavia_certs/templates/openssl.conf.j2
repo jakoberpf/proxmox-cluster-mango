@@ -66,13 +66,13 @@ commonName                      = Common Name
 emailAddress                    = Email Address
 
 # Optionally, specify some defaults.
-countryName_default             = US
-stateOrProvinceName_default     = Oregon
-localityName_default            =
-0.organizationName_default      = OpenStack
-organizationalUnitName_default  = Octavia
-emailAddress_default            =
-commonName_default              = example.org
+countryName_default             = {{ octavia_cert_client_req_country_name }}
+stateOrProvinceName_default     = {{ octavia_cert_client_req_state_or_province_name }}
+localityName_default            = {{ octavia_cert_client_req_locality_name }}
+0.organizationName_default      = {{ octavia_cert_client_req_organization_name }}
+organizationalUnitName_default  = {{ octavia_cert_client_req_organization_unit_name }}
+emailAddress_default            = {{ octavia_cert_client_req_email_address }}
+commonName_default              = {{ octavia_cert_client_req_common_name }}
 
 [ v3_ca ]
 # Extensions for a typical CA (`man x509v3_config`).
