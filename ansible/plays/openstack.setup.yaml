@@ -61,7 +61,7 @@
 
     - name: Set permissions of kolla configs
       become: yes
-      command: chown $USER:$USER /etc/kolla
+      command: chown jakoberpf:jakoberpf /etc/kolla
 
     - name: Copy globals
       become: yes
@@ -69,18 +69,70 @@
         src: ../artifacts/kolla/globals.yml
         dest: /etc/kolla/globals.yml
 
-    - name: Copy passwords
+    - name: Check if passwords exists on remote
+      stat:
+        path: /etc/kolla/passwords.yml
+      register: stat_passwords_remote
+
+    - name: Check if passwords exists on local
+      local_action: stat path=../artifacts/kolla/passwords.yml
+      register: stat_passwords_local
+
+    - name: Copy sample passwords
       become: yes
       ansible.builtin.copy:
         src: ../artifacts/kolla/passwords.sample.yml
         dest: /etc/kolla/passwords.yml
+      when: not stat_passwords_remote.stat.exists and not stat_passwords_local.stat.exists
+
+    - name: Copy present passwords
+      become: yes
+      ansible.builtin.copy:
+        src: ../artifacts/kolla/passwords.yml
+        dest: /etc/kolla/passwords.yml
+      when: stat_passwords_local.stat.exists
+
+    # kolla-genpwd 
 
     - name: Copy inventory
       ansible.builtin.copy:
         remote_src: yes
         src: $HOME/kolla-openstack/share/kolla-ansible/ansible/inventory/all-in-one
         dest: .
-        
+
+    - name: Create a directory for the kolla configs
+      become: yes
+      ansible.builtin.file:
+        path: /etc/kolla/config/octavia
+        state: directory
+        mode: 700
+
+    - name: cp server_ca/private/ca.key.pem /etc/octavia/certs/server_ca.key.pem
+      become: yes
+      ansible.builtin.copy:
+        src: ../artifacts/octavia/server_ca/private/ca.key.pem
+        dest: /etc/kolla/config/octavia/server_ca.key.pem
+        mode: 700
+
+    - name: cp server_ca/certs/ca.cert.pem /etc/octavia/certs/server_ca.cert.pem
+      become: yes
+      ansible.builtin.copy:
+        src: ../artifacts/octavia/server_ca/certs/ca.cert.pem
+        dest: /etc/kolla/config/octavia/server_ca.cert.pem
+
+    - name: cp client_ca/certs/ca.cert.pem /etc/octavia/certs/client_ca.cert.pem
+      become: yes
+      ansible.builtin.copy:
+        src: ../artifacts/octavia/client_ca/certs/ca.cert.pem
+        dest: /etc/kolla/config/octavia/client_ca.cert.pem
+
+    - name: cp client_ca/private/client.cert-and-key.pem /etc/octavia/certs/client.cert-and-key.pem
+      become: yes
+      ansible.builtin.copy:
+        src: ../artifacts/octavia/client_ca/private/client.cert-and-key.pem
+        dest: /etc/kolla/config/octavia/client.cert-and-key.pem
+        mode: 700
+
     # source $HOME/kolla-openstack/bin/activate
     # kolla-ansible -i all-in-one bootstrap-servers
     # kolla-ansible -i all-in-one prechecks
@@ -89,9 +141,6 @@
     # kolla-ansible -i all-in-one check
     # after doing changes to config
     # kolla-ansible -i all-in-one reconfigure
-
-    # generate octavia-certificate-generate
-    # /etc/kolla/config/octavia
 
     # https://docs.openstack.org/kolla-ansible/latest/reference/networking/octavia.html
     # https://docs.openstack.org/octavia/ussuri/admin/guides/certificates.html
