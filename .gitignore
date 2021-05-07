@@ -5,10 +5,8 @@
 *terraform.tfstate
 *terraform.tfstate.backup
 *.terraform.tfstate.lock.info
+.venv
 images/
-terraform/logs/
-terraform/files/
-ansible/configs/etc/kolla/passwords.yml
 ansible/artifacts/octavia/server_ca/
 ansible/artifacts/octavia/client_ca/
 ansible/artifacts/kolla/passwords.yml
