@@ -16,3 +16,4 @@ terraform import openstack_identity_user_v3.admin <admin-user-id>
 ```
 ## Troubleshooting
 alias sshb="ssh -J $BASTION_HOST@$BASTION_IP"
+curl -H "Host: test.openstack.dev.jakoberpf.de" http://192.168.2.200
