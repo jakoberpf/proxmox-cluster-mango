@@ -40,8 +40,12 @@
   hosts: machine
 
   tasks:
-      # git clone https://github.com/ceph/ceph-ansible.git
-      # git checkout $branch
+    - name: Git checkout
+      ansible.builtin.git:
+        repo: 'https://github.com/ceph/ceph-ansible.git'
+        dest: $HOME/ceph-ansible
+        version: stable-6.0
+
     - name: Install packages only when the apt process is not locked
       become: yes
       apt:
@@ -86,4 +90,6 @@
         - mons.yml
         - osds.yml
 
-# ansible-playbook site.yaml -i inventory --connection=local
+# cd ceph-ansible
+# source bin/activate
+# ansible-playbook site.yml -i inventory --connection=local
