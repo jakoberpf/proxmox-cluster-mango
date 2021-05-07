@@ -85,21 +85,21 @@ resource "openstack_images_image_v2" "fedora33" {
   }
 }
 
-# https://github.com/stackhpc/magnum-terraform/blob/master/site/upload-atomic.sh
-resource "openstack_images_image_v2" "fedora_atomic" {
-  name             = "fedora-atomic"
-  image_source_url = "https://dl.fedoraproject.org/pub/alt/atomic/stable/Fedora-Atomic-29-20181025.1/AtomicHost/x86_64/images/Fedora-AtomicHost-29-20181025.1.x86_64.qcow2"
-  container_format = "bare"
-  disk_format      = "qcow2"
-  visibility       = "public"
-  # protected        = true
-  web_download = true
+# # https://github.com/stackhpc/magnum-terraform/blob/master/site/upload-atomic.sh
+# resource "openstack_images_image_v2" "fedora_atomic" {
+#   name             = "fedora-atomic"
+#   image_source_url = "https://dl.fedoraproject.org/pub/alt/atomic/stable/Fedora-Atomic-29-20181025.1/AtomicHost/x86_64/images/Fedora-AtomicHost-29-20181025.1.x86_64.qcow2"
+#   container_format = "bare"
+#   disk_format      = "qcow2"
+#   visibility       = "public"
+#   # protected        = true
+#   web_download = true
 
-  properties = {
-    usage     = "kubernetes"
-    os_distro = "fedora-atomic"
-  }
-}
+#   properties = {
+#     usage     = "kubernetes"
+#     os_distro = "fedora-atomic"
+#   }
+# }
 
 resource "openstack_images_image_v2" "fedora_coreos" {
   name             = "fedora-coreos"

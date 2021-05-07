@@ -12,3 +12,4 @@ ansible/configs/etc/kolla/passwords.yml
 ansible/artifacts/octavia/server_ca/
 ansible/artifacts/octavia/client_ca/
 ansible/artifacts/kolla/passwords.yml
+terraform/admin/files/logins
