@@ -1,0 +1,12 @@
+# https
+server {
+    listen 10.147.19.88:80;
+    server_name openstack.dev.jakoberpf.de; 
+
+    access_log /var/log/nginx/reverse-access.log;
+    error_log /var/log/nginx/reverse-error.log;
+
+    location / {
+        proxy_pass http://openstack.dev.jakoberpf.de;
+  }
+}

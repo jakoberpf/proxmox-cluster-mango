@@ -3,8 +3,8 @@
   hosts: machine
 
   vars:
-    openstack_ingress_ip: "10.147.19.197"
-    openstack_ingress_adress: openstack.dev.jakoberpf.de
+    ceph_ingress_ip: "10.147.19.197"
+    ceph_ingress_adress: ceph.dev.jakoberpf.de
 
   tasks:
     - name: Install nginx reverse proxy
@@ -17,18 +17,26 @@
       retries: 100
       until: apt_action is success or ('Failed to lock apt for exclusive operation' not in apt_action.msg and '/var/lib/dpkg/lock' not in apt_action.msg)
 
-    - name: Create the nginx config for {{ openstack_ingress_adress }}
+    - name: Add ceph monitor ip and address to /etc/hosts
+      become: yes
+      lineinfile:
+        dest: /etc/hosts
+        regexp: ".*ceph.dev.jakoberpf.de$"
+        line: "192.168.0.199 ceph.dev.jakoberpf.de"
+        state: present
+
+    - name: Create the nginx config for {{ ceph_ingress_adress }}
       become: yes
       ansible.builtin.template:
-        src: ../templates/nginx.openstack.j2
-        dest: "/etc/nginx/sites-available/{{ openstack_ingress_adress }}"
+        src: ../templates/nginx.ceph.j2
+        dest: "/etc/nginx/sites-available/{{ ceph_ingress_adress }}"
       register: config
 
-    - name: Create a symbolic link for {{ openstack_ingress_adress }}
+    - name: Create a symbolic link for {{ ceph_ingress_adress }}
       become: yes
       ansible.builtin.file:
-        src: "/etc/nginx/sites-available/{{ openstack_ingress_adress }}"
-        dest: "/etc/nginx/sites-enabled/{{ openstack_ingress_adress }}"
+        src: "/etc/nginx/sites-available/{{ ceph_ingress_adress }}"
+        dest: "/etc/nginx/sites-enabled/{{ ceph_ingress_adress }}"
         state: link
 
     - name: Remove system link of default config
@@ -37,7 +45,7 @@
         path: /etc/nginx/sites-enabled/default
         state: absent
 
-    - name: Restart nginx, in all cases
+    - name: Restart service nginx, if configuration changed
       ansible.builtin.service:
         name: nginx
         state: restarted

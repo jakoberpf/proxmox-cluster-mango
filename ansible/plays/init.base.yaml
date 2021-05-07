@@ -52,6 +52,6 @@
                 addresses:
                   - 1.1.1.1
                   - 8.8.8.8
-            enp9s0: # T he 10Gbit/s Interface
+            enp9s0: # The 10Gbit/s Interface
               dhcp4: no
               dhcp6: no

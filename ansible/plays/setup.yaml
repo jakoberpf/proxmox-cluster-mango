@@ -1,0 +1,16 @@
+---
+
+- name: Include basic initialisation
+  include: init.base.yaml
+
+# - name: Include timeshift setup
+#   include: init.timeshift.yaml
+
+# - name: Include zerotier setup
+#   include: init.zerotier.yaml
+
+########
+# Ceph #
+########
+- name: Include ceph-ansible setup
+  include: ceph.setup.yaml

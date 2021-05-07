@@ -1,0 +1,163 @@
+---
+#- name: Ensure python OpenSSL dependencies are installed.
+#  pip:
+#    name: pyOpenSSL
+#    state: present
+#    extra_args: >-
+#      {{ octavia_developer_mode | ternary(pip_install_developer_constraints | default('--constraint /opt/developer-pip-constraints.txt'), '') }}
+#      {{ (pip_install_upper_constraints is defined) | ternary('--constraint ' + pip_install_upper_constraints | default(''),'') }}
+#      {{ pip_install_options | default('') }}
+
+- name: Generate Cert Dirs
+  file:
+    path: "{{ item.path }}"
+    state: directory
+    mode: "{{ item.mode }}"
+    # owner: "{{ octavia_cert_user }}"
+  with_items:
+    - { path: "{{ octavia_cert_dir }}", mode: "0750" }
+    - { path: "{{ octavia_cert_dir }}/client_ca", mode: "0750" }
+    - { path: "{{ octavia_cert_dir }}/client_ca/certs", mode: "0750" }
+    - { path: "{{ octavia_cert_dir }}/client_ca/csl", mode: "0750" }
+    - { path: "{{ octavia_cert_dir }}/client_ca/csr", mode: "0750" }
+    - { path: "{{ octavia_cert_dir }}/client_ca/newcerts", mode: "0750" }
+    - { path: "{{ octavia_cert_dir }}/client_ca/private", mode: "0700" }
+    - { path: "{{ octavia_cert_dir }}/server_ca", mode: "0750" }
+    - { path: "{{ octavia_cert_dir }}/server_ca/certs", mode: "0750" }
+    - { path: "{{ octavia_cert_dir }}/server_ca/csl", mode: "0750" }
+    - { path: "{{ octavia_cert_dir }}/server_ca/newcerts", mode: "0750" }
+    - { path: "{{ octavia_cert_dir }}/server_ca/private", mode: "0700" }
+
+# ansible's openssl_certificate can't create X509 extensions
+# but you need CA: true in Basic Constrainst to have a CA cert
+
+- name: Generate openssl.conf
+  template:
+    src: "templates/openssl.conf.j2"
+    dest: "{{ octavia_cert_dir }}/openssl.cnf"
+    mode: 0440
+
+##########
+# Server #
+##########
+
+# set up openssl for use
+- name: Touch index.txt
+  file:
+    path: "{{ octavia_cert_dir }}/server_ca/index.txt"
+    state: touch
+    mode: 0755
+
+- name: Init serial
+  copy:
+    content: "1000"
+    dest: "{{ octavia_cert_dir }}/server_ca/serial"
+    force: no
+
+- name: Create the server CA key.
+  openssl_privatekey:
+    path: "{{ octavia_ca_private_key }}"
+    passphrase: "{{ octavia_ca_private_key_passphrase }}"
+    cipher: "{{ octavia_cert_cipher_server }}"
+    size: "{{ octavia_cert_key_length_server }}"
+
+- name: Create the server CA certificate.
+  command: >
+    openssl req -new -x509 -sha256 -extensions v3_ca \
+    -passin pass:'{{ octavia_ca_private_key_passphrase }}' \
+    -key {{ octavia_ca_private_key }} \
+    -config {{ octavia_cert_dir }}/openssl.cnf \
+    -days {{ octavia_cert_validity_days }} \
+    -out {{ octavia_ca_certificate }} \
+    -subj {{ octavia_cert_server_ca_subject }} \
+
+##########
+# Client #
+##########
+
+# set up openssl for use
+- name: Touch index.txt
+  file:
+    path: "{{ octavia_cert_dir }}/client_ca/index.txt"
+    state: touch
+    mode: 0755
+
+- name: Init serial
+  copy:
+    content: "1000"
+    dest: "{{ octavia_cert_dir }}/client_ca/serial"
+    force: no
+
+- name: Create the client CA key.
+  block:
+    - name: Create the client CAs private key
+      openssl_privatekey:
+        path: "{{ octavia_client_ca_key }}"
+        passphrase: "{{ octavia_cert_client_password }}"
+        cipher: "{{ octavia_cert_cipher_client }}"
+        size: "{{ octavia_cert_key_length_client }}"
+  # chmod 400 private/ca.key.pem
+
+- name: Create the client CA certificate.
+  command: >
+    openssl req -x509 -passin pass:'{{ octavia_cert_client_password }}' -new -nodes \
+    -config {{ octavia_cert_dir }}/openssl.cnf \
+    -subj "{{ octavia_cert_client_ca_subject }}" \
+    -days {{ octavia_cert_validity_days }} \
+    -key {{ octavia_client_ca_key }} \
+    -out {{ octavia_client_ca }}
+
+- name: Create a key for the client certificate to use.
+  block:
+    - name: Create the client CAs private key
+      openssl_privatekey:
+        path: "{{ octavia_client_key }}"
+        passphrase: "{{ octavia_cert_client_password }}"
+        cipher: "{{ octavia_cert_cipher_client }}"
+        size: "{{ octavia_cert_key_length_client }}"
+
+- name: Create the certificate request for the client certificate used on the controllers.
+  command: >
+    openssl req -passin pass:'{{ octavia_cert_client_password }}' -new -sha256 \
+    -config {{ octavia_cert_dir }}/openssl.cnf \
+    -subj {{ octavia_cert_client_ca_subject }} \
+    -days {{ octavia_cert_validity_days }} \
+    -key {{ octavia_client_key }} \
+    -out {{ octavia_client_request }}
+
+# - name: Create the certificate request for the client certificate used on the controllers.
+#   openssl_csr:
+#     path: "{{ octavia_cert_dir }}/client_ca/csr/client.csr.pem"
+#     common_name: "{{ octavia_cert_client_req_common_name }}"
+#     country_name: "{{ octavia_cert_client_req_country_name }}"
+#     state_or_province_name: "{{ octavia_cert_client_req_state_or_province_name }}"
+#     locality_name: "{{ octavia_cert_client_req_locality_name }}"
+#     organization_name: "{{ octavia_cert_client_req_organization_name }}"
+#     privatekey_path: "{{ octavia_cert_dir }}/client.key"
+
+- name: Sign the client certificate request.
+  command: >
+    openssl ca -passin pass:'{{ octavia_cert_client_password }}' -extensions usr_cert -notext -md sha256 -batch \
+    -config ../openssl.cnf \
+    -days {{ octavia_cert_validity_days }} \
+    -in csr/client.csr.pem \
+    -out certs/client.cert.pem 
+  args:
+    chdir: "{{ octavia_cert_dir }}/client_ca"
+    creates: "{{ octavia_client_cert }}"
+
+- name: Sign the client certificate request.
+  command: >
+    openssl rsa -passin pass:'{{ octavia_cert_client_password }}' -in private/client.key.pem -out private/client.cert-and-key.pem \
+  args:
+    chdir: "{{ octavia_cert_dir }}/client_ca"
+    creates: "private/client.cert-and-key.pem"
+
+- name: Create a concatenated client certificate and key file.
+  shell: "certs/client.cert.pem >> private/client.cert-and-key.pem"
+  args:
+    chdir: "{{ octavia_cert_dir }}/client_ca"
+    creates: "private/client.cert-and-key.pem"
+  tags:
+      - skip_ansible_lint
+

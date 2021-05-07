@@ -5,12 +5,18 @@
   hosts: machine
 
   vars:
+    # zerotier_api_url
     zerotier_network_id: 35c192ce9b8273fd
-    zerotier_api_accesstoken: "{{ vault_zerotier_accesstoken }}"
+    zerotier_api_accesstoken: "{{ zerotier_accesstoken }}"
     zerotier_register_short_hostname: true
+    zerotier_member_ip_assignments: "10.147.19.197"
+    zerotier_member_description: "development machine"
 
   roles:
-    - { role: m4rcu5nl.zerotier, become: true }
+    - role: networking/zerotier
+      become: true 
+      vars:
+        skip_install: true
 
   # curl -s https://install.zerotier.com | sudo bash
   # sudo zerotier-cli join <id>

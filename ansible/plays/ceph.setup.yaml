@@ -1,0 +1,95 @@
+# https://github.com/jcmdln/cephadm-ansible
+# https://www.reddit.com/r/ceph/comments/mi3asa/cephadm_on_ubuntu_2004/
+# https://docs.ceph.com/en/latest/cephadm/install/#requirements
+
+# sudo cephadm bootstrap --mon-ip 192.168.2.199 --skip-monitoring-stack --allow-overwrite
+
+# cd /tmp \
+# curl --silent --remote-name --location https://github.com/ceph/ceph/raw/pacific/src/cephadm/cephadm \
+# chmod +x cephadm \
+# sudo ./cephadm add-repo --release pacific \
+# sudo rm /etc/apt/trusted.gpg.d/ceph.release.gpg \
+# wget https://download.ceph.com/keys/release.asc \
+# sudo apt-key add release.asc \
+# sudo apt update \
+# sudo ./cephadm install
+
+# Ceph Dashboard is now available at:
+
+# URL: https://development-machine:8443/
+# User: admin
+# Password: 1ui5p4kb7u
+
+# You can access the Ceph CLI with:
+
+# sudo /usr/sbin/cephadm shell --fsid e400de8e-acaa-11eb-a024-c18134814288 -c /etc/ceph/ceph.conf -k /etc/ceph/ceph.client.admin.keyring
+
+# Please consider enabling telemetry to help improve Ceph:
+
+# ceph telemetry on
+
+# For more information see:
+
+# https://docs.ceph.com/docs/pacific/mgr/telemetry/
+
+# Bootstrap complete.
+
+# https://www.velotio.com/engineering-blog/kubernetes-storage-using-ceph
+
+- name: Preprare Development Machine
+  hosts: machine
+
+  tasks:
+    - name: Git checkout
+      ansible.builtin.git:
+        repo: 'https://github.com/ceph/ceph-ansible.git'
+        dest: $HOME/ceph-ansible
+        version: stable-6.0
+
+    - name: Install packages only when the apt process is not locked
+      become: yes
+      apt:
+        pkg:
+          - git
+          - python3-dev
+          - python3-venv
+        state: present
+      register: apt_action
+      retries: 100
+      until: apt_action is success or ('Failed to lock apt for exclusive operation' not in apt_action.msg and '/var/lib/dpkg/lock' not in apt_action.msg)
+
+    - name: Setup virtual python enviroment for kolla openstack
+      shell: python3 -m venv $HOME/ceph-ansible
+
+    - name: Source virtual python env and install/update pip
+      shell: source $HOME/ceph-ansible/bin/activate && pip install -U pip
+      args:
+        executable: /bin/bash
+
+    - name: Source virtual python env and install/update pip
+      shell: source $HOME/ceph-ansible/bin/activate && pip install -r $HOME/ceph-ansible/requirements.txt
+      args:
+        executable: /bin/bash
+
+    - name: Copy site.yml
+      ansible.builtin.copy:
+        src: ../artifacts/ceph/site.yml
+        dest: $HOME/ceph-ansible/site.yml
+
+    - name: Copy inventory
+      ansible.builtin.copy:
+        src: ../artifacts/ceph/inventory
+        dest: $HOME/ceph-ansible/inventory
+
+    - name: Copy group_vars
+      ansible.builtin.copy:
+        src: "../artifacts/ceph/group_vars/{{ item }}"
+        dest: "$HOME/ceph-ansible/group_vars/{{ item }}"
+      with_items:
+        - all.yml
+        - mons.yml
+        - osds.yml
+
+# cd ceph-ansible
+# source bin/activate
+# ansible-playbook site.yml -i inventory --connection=local
