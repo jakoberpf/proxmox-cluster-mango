@@ -37,7 +37,7 @@
         path: /etc/nginx/sites-enabled/default
         state: absent
 
-    - name: Restart service httpd, in all cases
+    - name: Restart nginx, in all cases
       ansible.builtin.service:
         name: nginx
         state: restarted
