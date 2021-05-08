@@ -13,6 +13,7 @@ Before running any terraform, the init and setup ansible playbook must be succes
 ```
 terraform import openstack_identity_role_v3.admin <admin-role-id>
 terraform import openstack_identity_user_v3.admin <admin-user-id>
+terraform import openstack_identity_project_v3.service <service-project-id>
 ```
 ## Troubleshooting
 alias sshb="ssh -J $BASTION_HOST@$BASTION_IP"
