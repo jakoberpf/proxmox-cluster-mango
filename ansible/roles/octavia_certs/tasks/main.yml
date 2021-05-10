@@ -154,7 +154,7 @@
     creates: "private/client.cert-and-key.pem"
 
 - name: Create a concatenated client certificate and key file.
-  shell: "certs/client.cert.pem >> private/client.cert-and-key.pem"
+  shell: "cat certs/client.cert.pem >> private/client.cert-and-key.pem"
   args:
     chdir: "{{ octavia_cert_dir }}/client_ca"
     creates: "private/client.cert-and-key.pem"
