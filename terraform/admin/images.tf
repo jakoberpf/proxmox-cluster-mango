@@ -15,6 +15,7 @@ resource "openstack_images_image_v2" "rancheros" {
   }
 }
 
+# https://docs.virtlet.cloud/dev/cirros/
 resource "openstack_images_image_v2" "cirros" {
   name             = "Cirros"
   image_source_url = "http://download.cirros-cloud.net/0.5.2/cirros-0.5.2-x86_64-disk.img"
