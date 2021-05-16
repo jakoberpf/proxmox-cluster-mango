@@ -32,5 +32,7 @@ do
     gpg --encrypt --recipient jakoberpf $GIT_ROOT/$secret
 done
 
-rm ansible/artifacts/octavia/client_ca.tar.xz
-rm ansible/artifacts/octavia/server_ca.tar.xz
+cd ansible/artifacts/octavia/
+rm client_ca.tar.xz
+rm server_ca.tar.xz
+cd $GIT_ROOT
