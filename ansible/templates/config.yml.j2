@@ -4,8 +4,6 @@ logfile: /var/log/cloudflared.log
 loglevel: info
 
 ingress:
-  - hostname: {{ web_zone }}
-    service: http://192.168.2.199:80
   - hostname: "*"
     path: "^/_healthcheck$"
     service: http_status:200
