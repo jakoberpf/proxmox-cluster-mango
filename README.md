@@ -18,3 +18,8 @@ terraform import openstack_identity_project_v3.service <service-project-id>
 ## Troubleshooting
 alias sshb="ssh -J $BASTION_HOST@$BASTION_IP"
 curl -H "Host: test.openstack.dev.jakoberpf.de" http://192.168.2.200
+
+## TlS Support
+https://openpower.ic.unicamp.br/post/integrating-openstack-ansible-with-lets-encrypt/
+https://gist.github.com/aptalca/ce05dded99ae0facc80fd361144b238c
+https://blog.linuxserver.io/2017/11/28/how-to-setup-a-reverse-proxy-with-letsencrypt-ssl-for-all-your-docker-apps/
