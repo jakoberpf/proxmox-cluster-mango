@@ -22,8 +22,8 @@
       become: yes
       lineinfile:
         dest: /etc/hosts
-        regexp: ".*openstack.dev.jakoberpf.de$"
-        line: "192.168.0.200 openstack.dev.jakoberpf.de"
+        regexp: ".*openstack.dev.erpf.de$"
+        line: "192.168.0.200 openstack.dev.erpf.de"
         state: present
 
     - name: Setup virtual python enviroment for kolla openstack
@@ -41,7 +41,7 @@
 
     - name: Create ansible config
       shell: |
-        cat << EOF > $HOME/ansible.cfg
+        cat << EOF > $HOME/kolla-openstack/ansible.cfg
         [defaults]
         host_key_checking=False
         pipelining=True
@@ -104,7 +104,7 @@
       ansible.builtin.copy:
         remote_src: yes
         src: $HOME/kolla-openstack/share/kolla-ansible/ansible/inventory/all-in-one
-        dest: .
+        dest: $HOME/kolla-openstack/
 
     - name: Create a directory for the kolla configs
       become: yes
