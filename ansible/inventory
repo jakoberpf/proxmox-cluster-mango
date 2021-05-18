@@ -1,2 +1,2 @@
 [machine]
-development-machine ansible_host=10.147.19.197 ansible_user=jakoberpf
+development-machine ansible_host=ssh.openstack.dev.erpf.de ansible_user=jakoberpf
