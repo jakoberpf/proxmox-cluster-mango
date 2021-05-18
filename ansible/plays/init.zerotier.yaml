@@ -6,11 +6,11 @@
 
   vars:
     # zerotier_api_url
-    zerotier_network_id: 35c192ce9b8273fd
+    zerotier_network_id: "{{ zerotier_network_id }}"
     zerotier_api_accesstoken: "{{ zerotier_accesstoken }}"
     zerotier_register_short_hostname: true
-    zerotier_member_ip_assignments: "10.147.19.197"
-    zerotier_member_description: "development machine"
+    zerotier_member_ip_assignments: "{{ zerotier_network_ip }}"
+    zerotier_member_description: "The development machine"
 
   roles:
     - role: networking/zerotier
@@ -20,4 +20,4 @@
 
   # curl -s https://install.zerotier.com | sudo bash
   # sudo zerotier-cli join <id>
-  # sudo timeshift --create --comments "Zerotier is installed and joined 35c192ce9b8273fd"
+  # sudo timeshift --create --comments "Zerotier is installed and joined the management network"
