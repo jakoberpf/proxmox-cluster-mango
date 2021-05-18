@@ -14,3 +14,9 @@
 ########
 - name: Include ceph-ansible setup
   include: ceph.setup.yaml
+
+#############
+# Openstack #
+#############
+- name: Include kolla-openstack
+  include: openstack.setup.yaml
