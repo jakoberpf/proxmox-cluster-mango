@@ -9,6 +9,9 @@
 # - name: Include zerotier setup
 #   include: init.zerotier.yaml
 
+# - name: Include cloudflared setup
+#   include: init.cloudflared.yaml
+
 ########
 # Ceph #
 ########
