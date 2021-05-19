@@ -113,7 +113,7 @@ server {
     error_log /var/log/nginx/reverse-error.log;
 
     location / {
-        proxy_pass ws://{{ openstack_ingress_adress }}:6080;
+        proxy_pass http://{{ openstack_ingress_adress }}:6080;
   }
 }
 
