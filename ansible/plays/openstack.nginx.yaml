@@ -4,7 +4,7 @@
 
   vars:
     openstack_ingress_ip: "10.147.19.197"
-    openstack_ingress_adress: openstack.dev.jakoberpf.de
+    openstack_ingress_adress: openstack.dev.erpf.de
 
   tasks:
     - name: Install nginx reverse proxy
