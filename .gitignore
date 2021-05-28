@@ -5,6 +5,7 @@
 *terraform.tfstate
 *terraform.tfstate.backup
 *.terraform.tfstate.lock.info
+*.vagrant
 .venv
 images/
 ansible/artifacts/octavia/server_ca/
