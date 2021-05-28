@@ -1,7 +1,7 @@
 resource "openstack_compute_instance_v2" "bastion" {
   name            = "ubuntu"
   image_name      = "Ubuntu20.04LTS"
-  flavor_name     = "m1.small"
+  flavor_name     = "t1.small"
   key_pair        = "jakoberpf"
   security_groups = ["icmp","ssh"]
 
