@@ -13,10 +13,8 @@ secrets+=("terraform/admin/files/logins")
 secrets+=("terraform/services/.envrc")
 secrets+=("terraform/services/terraform.tfstate")
 
-cd ansible/artifacts/octavia/
-tar -cf client_ca.tar.xz client_ca
-tar -cf server_ca.tar.xz server_ca
-cd $GIT_ROOT
+tar -cf $GIT_ROOT/ansible/artifacts/octavia/client_ca.tar.xz $GIT_ROOT/ansible/artifacts/octavia/client_ca
+tar -cf $GIT_ROOT/ansible/artifacts/octavia/server_ca.tar.xz $GIT_ROOT/ansible/artifacts/octavia/server_ca
 
 secrets+=("ansible/artifacts/octavia/client_ca.tar.xz")
 secrets+=("ansible/artifacts/octavia/server_ca.tar.xz")
@@ -32,7 +30,5 @@ do
     gpg --encrypt --recipient jakoberpf $GIT_ROOT/$secret
 done
 
-cd ansible/artifacts/octavia/
-rm client_ca.tar.xz
-rm server_ca.tar.xz
-cd $GIT_ROOT
+rm $GIT_ROOT/ansible/artifacts/octavia/client_ca.tar.xz
+rm $GIT_ROOT/ansible/artifacts/octavia/server_ca.tar.xz
