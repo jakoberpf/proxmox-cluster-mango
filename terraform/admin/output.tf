@@ -4,11 +4,15 @@ resource "local_file" "logins" {
       jakoberpf_username      = openstack_identity_user_v3.jakob_erpf.name,
       jakoberpf_password      = openstack_identity_user_v3.jakob_erpf.password,
       fabianerpf_username     = openstack_identity_user_v3.fabian_erpf.name,
-      fabianerpf_password     = openstack_identity_user_v3.fabian_erpf.password
+      fabianerpf_password     = openstack_identity_user_v3.fabian_erpf.password,
+      davidkoch_username     = openstack_identity_user_v3.david_koch.name,
+      davidkoch_password     = openstack_identity_user_v3.david_koch.password,
       terraform_dev_username  = openstack_identity_user_v3.terraform_dev.name,
       terraform_dev_password  = openstack_identity_user_v3.terraform_dev.password,
       terraform_test_username = openstack_identity_user_v3.terraform_test.name,
-      terraform_test_password = openstack_identity_user_v3.terraform_test.password
+      terraform_test_password = openstack_identity_user_v3.terraform_test.password,
+      terraform_live_username = openstack_identity_user_v3.terraform_live.name,
+      terraform_live_password = openstack_identity_user_v3.terraform_live.password
     }
   )
   filename = "${path.module}/files/logins"
