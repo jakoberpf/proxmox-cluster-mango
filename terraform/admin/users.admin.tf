@@ -25,3 +25,9 @@ resource "openstack_identity_role_assignment_v3" "admin_dev" {
   project_id = openstack_identity_project_v3.dev.id
   role_id    = openstack_identity_role_v3.admin.id
 }
+
+resource "openstack_identity_role_assignment_v3" "admin_live" {
+  user_id    = openstack_identity_user_v3.admin.id
+  project_id = openstack_identity_project_v3.live.id
+  role_id    = openstack_identity_role_v3.admin.id
+}
