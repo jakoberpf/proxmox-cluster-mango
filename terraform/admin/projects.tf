@@ -28,6 +28,7 @@ resource "openstack_compute_quotaset_v2" "dev" {
   instances            = 20
   server_groups        = 4
   server_group_members = 8
+  metadata_items       = 10
 }
 resource "openstack_compute_quotaset_v2" "test" {
   project_id           = openstack_identity_project_v3.test.id
@@ -37,6 +38,7 @@ resource "openstack_compute_quotaset_v2" "test" {
   instances            = 20
   server_groups        = 4
   server_group_members = 8
+  metadata_items       = 10
 }
 resource "openstack_compute_quotaset_v2" "live" {
   project_id           = openstack_identity_project_v3.live.id
@@ -46,4 +48,5 @@ resource "openstack_compute_quotaset_v2" "live" {
   instances            = 20
   server_groups        = 4
   server_group_members = 8
+  metadata_items       = 10
 }
