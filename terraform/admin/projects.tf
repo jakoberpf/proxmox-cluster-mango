@@ -21,7 +21,8 @@ resource "openstack_identity_project_v3" "live" {
 
 # https://registry.terraform.io/providers/terraform-provider-openstack/openstack/latest/docs/resources/compute_quotaset_v2
 resource "openstack_compute_quotaset_v2" "dev" {
-  project_id           = "${openstack_identity_project_v3.dev.id}"
+  project_id           = openstack_identity_project_v3.dev.id
+  key_pairs            = 2
   ram                  = 40960
   cores                = 64
   instances            = 20
@@ -29,7 +30,8 @@ resource "openstack_compute_quotaset_v2" "dev" {
   server_group_members = 8
 }
 resource "openstack_compute_quotaset_v2" "test" {
-  project_id           = "${openstack_identity_project_v3.test.id}"
+  project_id           = openstack_identity_project_v3.test.id
+  key_pairs            = 2
   ram                  = 40960
   cores                = 64
   instances            = 20
@@ -37,7 +39,7 @@ resource "openstack_compute_quotaset_v2" "test" {
   server_group_members = 8
 }
 resource "openstack_compute_quotaset_v2" "live" {
-  project_id           = "${openstack_identity_project_v3.live.id}"
+  project_id           = openstack_identity_project_v3.live.id
   key_pairs            = 1
   ram                  = 40960
   cores                = 256
