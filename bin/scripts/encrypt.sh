@@ -27,7 +27,7 @@ echo ""
 
 for secret in "${secrets[@]}";
 do
-    gpg --encrypt --recipient jakoberpf $GIT_ROOT/$secret
+    gpg --encrypt --yes --recipient jakoberpf $GIT_ROOT/$secret
 done
 
 rm $GIT_ROOT/ansible/artifacts/octavia/client_ca.tar.xz
