@@ -1,2 +1,2 @@
 [machine]
-development-machine ansible_host=ssh.openstack.dev.erpf.de ansible_user=jakoberpf
+proxmox ansible_host=10.147.19.60 ansible_user=root
