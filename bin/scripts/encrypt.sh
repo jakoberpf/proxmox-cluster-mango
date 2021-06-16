@@ -6,18 +6,8 @@ declare -a secrets
 
 secrets+=(".envrc")
 secrets+=("ansible/.vault_pass")
-secrets+=("ansible/artifacts/kolla/passwords.yml")
 secrets+=("terraform/admin/.envrc")
-secrets+=("terraform/admin/terraform.tfstate")
-secrets+=("terraform/admin/files/logins")
-secrets+=("terraform/services/.envrc")
-secrets+=("terraform/services/terraform.tfstate")
-
-tar -cf $GIT_ROOT/ansible/artifacts/octavia/client_ca.tar.xz $GIT_ROOT/ansible/artifacts/octavia/client_ca
-tar -cf $GIT_ROOT/ansible/artifacts/octavia/server_ca.tar.xz $GIT_ROOT/ansible/artifacts/octavia/server_ca
-
-secrets+=("ansible/artifacts/octavia/client_ca.tar.xz")
-secrets+=("ansible/artifacts/octavia/server_ca.tar.xz")
+secrets+=("terraform/terraform.tfstate")
 
 echo ""
 echo " #######################"
@@ -29,6 +19,3 @@ for secret in "${secrets[@]}";
 do
     gpg --encrypt --yes --recipient jakoberpf $GIT_ROOT/$secret
 done
-
-rm $GIT_ROOT/ansible/artifacts/octavia/client_ca.tar.xz
-rm $GIT_ROOT/ansible/artifacts/octavia/server_ca.tar.xz
