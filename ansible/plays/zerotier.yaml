@@ -1,6 +1,4 @@
 ---
-# ansible-galaxy install m4rcu5nl.zerotier-one
-
 - name: Configure Zerotier
   hosts: machine
 
