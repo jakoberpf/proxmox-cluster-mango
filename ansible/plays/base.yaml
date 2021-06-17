@@ -3,6 +3,12 @@
   hosts: machine
 
   tasks:
+    - name: Remove/comment enterprice repo
+      replace:
+        path: /etc/apt/sources.list.d/pve-enterprise.list
+        regexp: 'deb https://enterprise.proxmox.com/debian/pve buster pve-enterprise'
+        replace: '#deb https://enterprise.proxmox.com/debian/pve buster pve-enterprise'
+        
     - name: Install basic packages
       become: yes
       apt:
