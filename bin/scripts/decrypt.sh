@@ -4,10 +4,12 @@ GIT_ROOT=$(git rev-parse --show-toplevel)
 
 declare -a secrets
 
-secrets+=(".envrc")
+#secrets+=(".envrc")
 secrets+=("ansible/.vault_pass")
-secrets+=("terraform/admin/.envrc")
-secrets+=("terraform/terraform.tfstate")
+secrets+=("ansible/artifacts/zerotier/identity.public")
+secrets+=("ansible/artifacts/zerotier/identity.secret")
+secrets+=("terraform/zerotier/.envrc")
+secrets+=("terraform/zerotier/terraform.tfstate")
 
 echo ""
 echo " #######################"
