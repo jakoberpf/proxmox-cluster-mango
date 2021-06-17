@@ -10,11 +10,12 @@ resource "zerotier_member" "proxmox" {
   ip_assignments = [var.zerotier_proxmox_ip]
 }
 
-output "private_key" {
-  sensitive = true
-  value     = zerotier_identity.proxmox.private_key
+resource "local_file" "private_key" {
+    content  = zerotier_identity.proxmox.private_key
+    filename = "../ansible/artifacts/zerotier/identity.secret"
 }
 
-output "public_key" {
-  value = zerotier_identity.proxmox.public_key
+resource "local_file" "public_key" {
+    content  = zerotier_identity.proxmox.public_key
+    filename = "../ansible/artifacts/zerotier/identity.public"
 }
