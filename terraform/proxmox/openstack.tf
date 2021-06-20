@@ -3,7 +3,7 @@ data "template_file" "cloud_init_ubuntu" {
   template = file("${path.module}/files/cloud_init_ubuntu.cloud_config")
 
   vars = {
-    ssh_key              = file("~/.ssh/apefactory.pub")
+    ssh_key              = file("~/.ssh/id_rsa.pub")
     zerotier_network_id  = var.zerotier_network_id
     zerotier_public_key  = zerotier_identity.openstack.public_key
     zerotier_private_key = zerotier_identity.openstack.private_key
