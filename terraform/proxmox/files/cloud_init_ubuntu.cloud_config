@@ -6,11 +6,15 @@ package_upgrade: true
 
 users:
   - name: ubuntu
-    passwd: ec3759e2c570d302e65ea20a7d985e3bc131024889ad902a046c385afcd71beec61a4f2a5e4ce56863f54840b7315d692cfaeda8239481e37b00cade86139abd
+    groups: sudo
+    shell: /bin/bash
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
     ssh_authorized_keys:
       - ${ssh_key}
   - name: jakoberpf
-    passwd: a202ea340e1a2c7e61eb145d84edc2028735f68fda31d4e3cb3c67d5fa0f2e51950961cba053d98c50ca5a229a2c73d78802d66b4b1d3cb900c99a77a4a3f33f
+    groups: sudo
+    shell: /bin/bash
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
     ssh_authorized_keys:
       - ${ssh_key}
   

@@ -31,11 +31,8 @@ resource "null_resource" "cloud_init_ubuntu" {
   }
 }
 
-
-# Create the VM
 resource "proxmox_vm_qemu" "vm-01" {
   ## Wait for the cloud-config file to exist
-
   depends_on = [
     null_resource.cloud_init_ubuntu
   ]
@@ -48,32 +45,30 @@ resource "proxmox_vm_qemu" "vm-01" {
   os_type = "cloud-init"
 
   # Cloud init options
-  ipconfig0  = "ip=192.168.1.45/22,gw=192.168.1.1"
+  ipconfig0  = "ip=192.168.2.191/22,gw=192.168.1.1"
   cicustom   = "user=local:snippets/cloud_init_ubuntu.yml"
-  # ciuser     = "jakoberpf"
-  # cipassword = "jakoberpf"
-  # sshkeys    = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDg+z06lsnTQDGdW2Q3m1MTNLoW9dKOHmGwjTBSnMj/JBkOBx5TEeBuv7IR5K1vkiSVqEsECrz6V6gNAMUb+56jEAsjgkvF/OwDG7g5hwfzDuar64+sQWosPAF0qUDeVd6+LSg/BnxUc4Koj6nUxX/lImyAhXCKTNsYm/LMyBysJeZD01TyHHjoHTmHQyXqSFKoJaFm2i1FBcrmtv/zsoXDKqRNn0Q1vrBYzc9AW92Ecmrnns3MVGW1QXvx3lVNrQ9s2aIyYxfWK2H321Z2eP44g5+UGp3YNBB2U3hUYmtZBjWAXeaKoqdeBO0t2pwpsh33qcdiW+Bmqy7R7x1LF9OX jakoberpf@jakoberpf.de"
-  
 
-  memory = 2048
+  memory = 32000
+  cores = 16
   agent  = 1
 
   # Set the boot disk paramters
-  bootdisk = "scsi0"
+  bootdisk = "virtio0"
   scsihw   = "virtio-scsi-pci"
 
   disk {
-    # id              = 0
-    size    = "11G"
-    type    = "scsi"
+    size    = "100G"
+    type    = "virtio"
     storage = "local-lvm"
-    # storage_type    = "lvm"
-    # iothread        = true
   }
 
   # Set the network
   network {
-    # id = 0
+    model  = "virtio"
+    bridge = "vmbr0"
+  }
+
+  network {
     model  = "virtio"
     bridge = "vmbr0"
   }
