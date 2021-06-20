@@ -6,7 +6,7 @@
 *terraform.tfstate.backup
 *.terraform.tfstate.lock.info
 *.vagrant
+*identity.public
+*identity.secret
 .venv
-ansible/artifacts/zerotier/identity.public
-ansible/artifacts/zerotier/identity.secret
 terraform/proxmox/files/*.cfg
