@@ -1,8 +1,11 @@
 # Navigate to the ISO directory for Proxmox
-$ cd /var/lib/vz/templates/isos
+cd /var/lib/vz/template/iso
 
 # Source the image
-$ wget https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img
+wget https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img
+
+apt-get install libguestfs-tools
+virt-customize -a focal-server-cloudimg-amd64.img --install qemu-guest-agent
 
 # Create the instance
 qm create 9000 -name debian-cloudinit -memory 1024 -net0 virtio,bridge=vmbr0 -cores 1 -sockets 1

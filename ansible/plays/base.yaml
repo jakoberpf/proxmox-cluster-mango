@@ -40,23 +40,4 @@
     #   community.general.ufw:
     #     state: enabled
 
-  # roles:
-    # - role: networking/netplan
-    #   netplan_enabled: true
-    #   netplan_configuration:
-    #     network:
-    #       version: 2
-    #       ethernets:
-    #         enp5s0: # The 1Gbit/s Interface
-    #           dhcp4: no
-    #           dhcp6: no
-    #           addresses: 
-    #               - 192.168.2.199/22
-    #           gateway4: 192.168.1.1
-    #           nameservers:
-    #             addresses:
-    #               - 1.1.1.1
-    #               - 8.8.8.8
-    #         enp9s0: # The 10Gbit/s Interface
-    #           dhcp4: no
-    #           dhcp6: no
+    # https://pve.proxmox.com/wiki/Certificate_Management
