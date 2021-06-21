@@ -12,10 +12,10 @@ resource "zerotier_member" "proxmox" {
 
 resource "local_file" "private_key" {
     content  = zerotier_identity.proxmox.private_key
-    filename = "../ansible/artifacts/zerotier/identity.secret"
+    filename = "../../ansible/artifacts/zerotier/identity.secret"
 }
 
 resource "local_file" "public_key" {
     content  = zerotier_identity.proxmox.public_key
-    filename = "../ansible/artifacts/zerotier/identity.public"
+    filename = "../../ansible/artifacts/zerotier/identity.public"
 }
