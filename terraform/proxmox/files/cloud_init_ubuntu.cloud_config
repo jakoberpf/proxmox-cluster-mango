@@ -23,6 +23,7 @@ packages:
   - qemu-guest-agent
 
 runcmd:
+  - systemctl start qemu-guest-agent
   # Setup Zerotier
   - curl -o zerotier-install.sh https://raw.githubusercontent.com/jakoberpf/zerotier-scripts/main/zerotier-installer.sh
   - chmod +x zerotier-install.sh
