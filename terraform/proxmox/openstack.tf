@@ -38,6 +38,7 @@ resource "proxmox_vm_qemu" "vm-01" {
   ]
 
   name        = "openstack-01"
+  # vmid        = "201"
   target_node = "pve"
 
   # Clone from debian-cloudinit template
@@ -58,6 +59,12 @@ resource "proxmox_vm_qemu" "vm-01" {
 
   disk {
     size    = "100G"
+    type    = "virtio"
+    storage = "local-lvm"
+  }
+
+  disk {
+    size    = "200G"
     type    = "virtio"
     storage = "local-lvm"
   }
