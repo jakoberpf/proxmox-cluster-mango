@@ -5,7 +5,13 @@ package_upgrade: true
 # package_reboot_if_required: true
 
 users:
-  - name: ubuntu
+  - name: ansible
+    groups: sudo
+    shell: /bin/bash
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    ssh_authorized_keys:
+      - ${ssh_key}
+  - name: terraform
     groups: sudo
     shell: /bin/bash
     sudo: ['ALL=(ALL) NOPASSWD:ALL']
