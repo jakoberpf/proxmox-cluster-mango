@@ -38,7 +38,7 @@ resource "proxmox_vm_qemu" "vm-01" {
   ]
 
   name        = "openstack-01"
-  # vmid        = "201"
+  vmid        = "201"
   target_node = "pve"
 
   # Clone from debian-cloudinit template
@@ -49,7 +49,7 @@ resource "proxmox_vm_qemu" "vm-01" {
   ipconfig0  = "ip=192.168.2.191/22,gw=192.168.1.1"
   cicustom   = "user=local:snippets/cloud_init_ubuntu.yml"
 
-  memory = 32000
+  memory = 100000
   cores = 16
   agent  = 1
 
