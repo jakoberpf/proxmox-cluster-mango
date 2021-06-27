@@ -49,7 +49,7 @@ resource "proxmox_vm_qemu" "vm-01" {
   ipconfig0  = "ip=192.168.2.191/22,gw=192.168.1.1"
   cicustom   = "user=local:snippets/cloud_init_ubuntu.yml"
 
-  memory = 100000
+  memory = 64000
   cores = 16
   agent  = 1
 
