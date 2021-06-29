@@ -10,3 +10,4 @@
 *identity.secret
 .venv
 terraform/proxmox/files/*.cfg
+terraform/microstack/files/*.cfg
