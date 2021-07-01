@@ -20,9 +20,10 @@ runcmd:
   - chmod +x zerotier-install.sh
   - ./zerotier-install.sh
   - zerotier-cli join ${zerotier_network_id}
-  # Setup Microstack
+  # Setup Microstack https://microstack.run/docs/single-node
   - snap install microstack --devmode --beta
   - microstack init --auto --control
+  # Get admin password "sudo snap get microstack config.credentials.keystone-password"
   - microstack launch cirros --name test
 
 write_files:
