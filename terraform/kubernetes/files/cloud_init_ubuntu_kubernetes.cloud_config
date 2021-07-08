@@ -1,0 +1,18 @@
+#cloud-config
+
+users:
+  - default
+  - name: jakoberpf
+    groups: sudo
+    shell: /bin/bash
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDg+z06lsnTQDGdW2Q3m1MTNLoW9dKOHmGwjTBSnMj/JBkOBx5TEeBuv7IR5K1vkiSVqEsECrz6V6gNAMUb+56jEAsjgkvF/OwDG7g5hwfzDuar64+sQWosPAF0qUDeVd6+LSg/BnxUc4Koj6nUxX/lImyAhXCKTNsYm/LMyBysJeZD01TyHHjoHTmHQyXqSFKoJaFm2i1FBcrmtv/zsoXDKqRNn0Q1vrBYzc9AW92Ecmrnns3MVGW1QXvx3lVNrQ9s2aIyYxfWK2H321Z2eP44g5+UGp3YNBB2U3hUYmtZBjWAXeaKoqdeBO0t2pwpsh33qcdiW+Bmqy7R7x1LF9OX jakoberpf@jakoberpf.de
+
+      
+packages:
+  - curl
+  - qemu-guest-agent
+
+runcmd:
+  - systemctl start qemu-guest-agent
