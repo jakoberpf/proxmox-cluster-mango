@@ -1,20 +1,25 @@
 # Source the Cloud Init Config file
 data "template_file" "cloud_init_ubuntu_kubernetes" {
+  count = var.node_count
   template = file("${path.module}/files/cloud_init_ubuntu_kubernetes.cloud_config")
-
   vars = {
     ssh_key              = file("~/.ssh/id_rsa.pub")
+    zerotier_network_id  = var.zerotier_network_id
+    zerotier_public_key  = zerotier_identity.kubernetes[count.index].public_key
+    zerotier_private_key = zerotier_identity.kubernetes[count.index].private_key
   }
 }
 
 # Create a local copy of the file, to transfer to Proxmox
 resource "local_file" "cloud_init_ubuntu_kubernetes" {
-  content  = data.template_file.cloud_init_ubuntu_kubernetes.rendered
-  filename = "${path.module}/files/cloud_init_ubuntu_kubernetes.cfg"
+  count = var.node_count
+  content  = data.template_file.cloud_init_ubuntu_kubernetes[count.index].rendered
+  filename = "${path.module}/files/cloud_init_ubuntu_kubernetes_${count.index}.cfg"
 }
 
 # Transfer the file to the Proxmox Host
 resource "null_resource" "cloud_init_ubuntu_kubernetes" {
+  count = var.node_count
   connection {
     type     = "ssh"
     user     = "root"
@@ -23,13 +28,13 @@ resource "null_resource" "cloud_init_ubuntu_kubernetes" {
   }
 
   provisioner "file" {
-    source      = local_file.cloud_init_ubuntu_kubernetes.filename
-    destination = "/var/lib/vz/snippets/cloud_init_ubuntu_kubernetes.yml"
+    source      = local_file.cloud_init_ubuntu_kubernetes[count.index].filename
+    destination = "/var/lib/vz/snippets/cloud_init_ubuntu_kubernetes_${count.index}.yml"
   }
 }
 
 resource "proxmox_vm_qemu" "kubernetes" {
-  count = 3
+  count = var.node_count
   ## Wait for the cloud-config file to exist
   depends_on = [
     null_resource.cloud_init_ubuntu_kubernetes
@@ -45,7 +50,7 @@ resource "proxmox_vm_qemu" "kubernetes" {
 
   # Cloud init options
   ipconfig0  = "ip=192.168.2.11${count.index}/22,gw=192.168.1.1"
-  cicustom   = "user=local:snippets/cloud_init_ubuntu_kubernetes.yml"
+  cicustom   = "user=local:snippets/cloud_init_ubuntu_kubernetes_${count.index}.yml"
 
   memory = 16000
   cores = 8

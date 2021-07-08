@@ -1,3 +1,9 @@
+# General
+variable "node_count" {
+  type        = number
+  description = "Number of nodes"
+  default     = 3
+}
 # Zerotier
 variable "zerotier_central_token" {
   type        = string
@@ -6,8 +12,4 @@ variable "zerotier_central_token" {
 variable "zerotier_network_id" {
   type        = string
   description = "The ID of the zerotier network"
-}
-variable "zerotier_openstack_ip" {
-  type        = string
-  description = "The IP to assign to the bastion"
 }
