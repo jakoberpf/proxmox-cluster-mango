@@ -9,5 +9,6 @@
 *identity.public
 *identity.secret
 .venv
-terraform/proxmox/files/*.cfg
+terraform/openstack/files/*.cfg
 terraform/microstack/files/*.cfg
+terraform/kubernetes/files/*.cfg
