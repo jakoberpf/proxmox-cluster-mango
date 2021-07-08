@@ -10,8 +10,10 @@ secrets+=("ansible/artifacts/zerotier/identity.public")
 secrets+=("ansible/artifacts/zerotier/identity.secret")
 secrets+=("terraform/zerotier/.envrc")
 secrets+=("terraform/zerotier/terraform.tfstate")
-secrets+=("terraform/proxmox/.envrc")
-secrets+=("terraform/proxmox/terraform.tfstate")
+secrets+=("terraform/openstack/.envrc")
+secrets+=("terraform/openstack/terraform.tfstate")
+secrets+=("terraform/kubernetes/.envrc")
+secrets+=("terraform/kubernetes/terraform.tfstate")
 
 echo ""
 echo " #######################"
