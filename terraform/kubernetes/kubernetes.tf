@@ -35,7 +35,7 @@ resource "proxmox_vm_qemu" "kubernetes" {
     null_resource.cloud_init_ubuntu_kubernetes
   ]
 
-  name        = "kubernetes${count.index}"
+  name        = "kubernetes-${count.index}"
   vmid        = "23${count.index}"
   target_node = "pve"
 
