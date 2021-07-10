@@ -31,6 +31,13 @@ resource "null_resource" "cloud_init_ubuntu_kubernetes" {
     source      = local_file.cloud_init_ubuntu_kubernetes[count.index].filename
     destination = "/var/lib/vz/snippets/cloud_init_ubuntu_kubernetes_${count.index}.yml"
   }
+
+  provisioner "remote-exec" {
+    when = destroy
+    inline = [
+      "rm /var/lib/vz/snippets/cloud_init_ubuntu_kubernetes_${count.index}.yml",
+    ]
+  }
 }
 
 resource "proxmox_vm_qemu" "kubernetes" {
