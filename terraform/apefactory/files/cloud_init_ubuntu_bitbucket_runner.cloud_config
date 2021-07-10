@@ -48,6 +48,11 @@ write_files:
     content: |
       net.ipv4.conf.all.forwarding=1
 
+  - path: /etc/sysctl.conf
+    content: | 
+       vm.swappiness = 1
+    append: true
+
   - path: /var/lib/zerotier-one/identity.public
     content: |
       ${zerotier_public_key}
