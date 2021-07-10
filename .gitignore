@@ -12,3 +12,4 @@
 terraform/openstack/files/*.cfg
 terraform/microstack/files/*.cfg
 terraform/kubernetes/files/*.cfg
+terraform/apefactory/files/*.cfg
