@@ -1,25 +1,25 @@
 # Source the Cloud Init Config file
-data "template_file" "cloud_init_ubuntu_ceph" {
-  count = var.node_count
+data "template_file" "cloud_init_ubuntu_ceph_mon" {
+  count = var.node_count_mon
   template = file("${path.module}/files/cloud_init_ubuntu_ceph.cloud_config")
   vars = {
     ssh_key              = file("~/.ssh/id_rsa.pub")
     zerotier_network_id  = var.zerotier_network_id
-    zerotier_public_key  = zerotier_identity.ceph[count.index].public_key
-    zerotier_private_key = zerotier_identity.ceph[count.index].private_key
+    zerotier_public_key  = zerotier_identity.ceph_mon[count.index].public_key
+    zerotier_private_key = zerotier_identity.ceph_mon[count.index].private_key
   }
 }
 
 # Create a local copy of the file, to transfer to Proxmox
-resource "local_file" "cloud_init_ubuntu_ceph" {
-  count = var.node_count
-  content  = data.template_file.cloud_init_ubuntu_ceph[count.index].rendered
-  filename = "${path.module}/files/cloud_init_ubuntu_ceph_${count.index}.cfg"
+resource "local_file" "cloud_init_ubuntu_ceph_mon" {
+  count = var.node_count_mon
+  content  = data.template_file.cloud_init_ubuntu_ceph_mon[count.index].rendered
+  filename = "${path.module}/files/cloud_init_ubuntu_ceph_mon_${count.index}.cfg"
 }
 
 # Transfer the file to the Proxmox Host
-resource "null_resource" "cloud_init_ubuntu_ceph" {
-  count = var.node_count
+resource "null_resource" "cloud_init_ubuntu_ceph_mon" {
+  count = var.node_count_mon
   connection {
     type     = "ssh"
     user     = "root"
@@ -28,27 +28,27 @@ resource "null_resource" "cloud_init_ubuntu_ceph" {
   }
 
   provisioner "file" {
-    source      = local_file.cloud_init_ubuntu_ceph[count.index].filename
-    destination = "/var/lib/vz/snippets/cloud_init_ubuntu_ceph_${count.index}.yml"
+    source      = local_file.cloud_init_ubuntu_ceph_mon[count.index].filename
+    destination = "/var/lib/vz/snippets/cloud_init_ubuntu_ceph_mon_${count.index}.yml"
   }
 
   provisioner "remote-exec" {
     when = destroy
     inline = [
-      "rm /var/lib/vz/snippets/cloud_init_ubuntu_ceph_${count.index}.yml",
+      "rm /var/lib/vz/snippets/cloud_init_ubuntu_ceph_mon_${count.index}.yml",
     ]
   }
 }
 
-resource "proxmox_vm_qemu" "ceph" {
-  count = var.node_count
+resource "proxmox_vm_qemu" "ceph_mon" {
+  count = var.node_count_mon
   ## Wait for the cloud-config file to exist
   depends_on = [
-    null_resource.cloud_init_ubuntu_ceph
+    null_resource.cloud_init_ubuntu_ceph_mon
   ]
 
-  name        = "ceph-${count.index}"
-  vmid        = "24${count.index}"
+  name        = "ceph-mon-${count.index}"
+  vmid        = "25${count.index}"
   target_node = "pve"
 
   # Clone from debian-cloudinit template
@@ -56,8 +56,8 @@ resource "proxmox_vm_qemu" "ceph" {
   os_type = "cloud-init"
 
   # Cloud init options
-  ipconfig0  = "ip=192.168.2.12${count.index}/22,gw=192.168.1.1"
-  cicustom   = "user=local:snippets/cloud_init_ubuntu_ceph_${count.index}.yml"
+  ipconfig0  = "ip=192.168.2.13${count.index}/22,gw=192.168.1.1"
+  cicustom   = "user=local:snippets/cloud_init_ubuntu_ceph_mon_${count.index}.yml"
 
   memory = 8000
   cores = 4
@@ -69,12 +69,6 @@ resource "proxmox_vm_qemu" "ceph" {
 
   disk {
     size    = "20G"
-    type    = "virtio"
-    storage = "local-lvm"
-  }
-
-  disk {
-    size    = "40G"
     type    = "virtio"
     storage = "local-lvm"
   }

@@ -1,5 +1,10 @@
 # General
-variable "node_count" {
+variable "node_count_mon" {
+  type        = number
+  description = "Number of nodes"
+  default     = 3
+}
+variable "node_count_osd" {
   type        = number
   description = "Number of nodes"
   default     = 3
