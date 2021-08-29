@@ -48,7 +48,7 @@ resource "proxmox_vm_qemu" "ceph_mon" {
   ]
 
   name        = "ceph-mon-${count.index}"
-  vmid        = "25${count.index}"
+  vmid        = "12${count.index}"
   target_node = "pve"
 
   # Clone from debian-cloudinit template
@@ -56,7 +56,7 @@ resource "proxmox_vm_qemu" "ceph_mon" {
   os_type = "cloud-init"
 
   # Cloud init options
-  ipconfig0  = "ip=192.168.2.13${count.index}/22,gw=192.168.1.1"
+  ipconfig0  = "ip=192.168.2.12${count.index}/22,gw=192.168.1.1"
   cicustom   = "user=local:snippets/cloud_init_ubuntu_ceph_mon_${count.index}.yml"
 
   memory = 8000

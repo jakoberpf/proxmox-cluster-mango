@@ -1,25 +1,25 @@
 # Source the Cloud Init Config file
-data "template_file" "cloud_init_ubuntu_ceph_osd" {
-  count = var.node_count_osd
+data "template_file" "cloud_init_ubuntu_ceph_rgws" {
+  count = var.node_count_rgws
   template = file("${path.module}/files/cloud_init_ubuntu_ceph.cloud_config")
   vars = {
     ssh_key              = file("~/.ssh/id_rsa.pub")
     zerotier_network_id  = var.zerotier_network_id
-    zerotier_public_key  = zerotier_identity.ceph_osd[count.index].public_key
-    zerotier_private_key = zerotier_identity.ceph_osd[count.index].private_key
+    zerotier_public_key  = zerotier_identity.ceph_rgws[count.index].public_key
+    zerotier_private_key = zerotier_identity.ceph_rgws[count.index].private_key
   }
 }
 
 # Create a local copy of the file, to transfer to Proxmox
-resource "local_file" "cloud_init_ubuntu_ceph_osd" {
-  count = var.node_count_osd
-  content  = data.template_file.cloud_init_ubuntu_ceph_osd[count.index].rendered
-  filename = "${path.module}/files/cloud_init_ubuntu_ceph_osd_${count.index}.cfg"
+resource "local_file" "cloud_init_ubuntu_ceph_rgws" {
+  count = var.node_count_rgws
+  content  = data.template_file.cloud_init_ubuntu_ceph_rgws[count.index].rendered
+  filename = "${path.module}/files/cloud_init_ubuntu_ceph_rgws_${count.index}.cfg"
 }
 
 # Transfer the file to the Proxmox Host
-resource "null_resource" "cloud_init_ubuntu_ceph_osd" {
-  count = var.node_count_osd
+resource "null_resource" "cloud_init_ubuntu_ceph_rgws" {
+  count = var.node_count_rgws
   connection {
     type     = "ssh"
     user     = "root"
@@ -28,27 +28,27 @@ resource "null_resource" "cloud_init_ubuntu_ceph_osd" {
   }
 
   provisioner "file" {
-    source      = local_file.cloud_init_ubuntu_ceph_osd[count.index].filename
-    destination = "/var/lib/vz/snippets/cloud_init_ubuntu_ceph_osd_${count.index}.yml"
+    source      = local_file.cloud_init_ubuntu_ceph_rgws[count.index].filename
+    destination = "/var/lib/vz/snippets/cloud_init_ubuntu_ceph_rgws_${count.index}.yml"
   }
 
   provisioner "remote-exec" {
     when = destroy
     inline = [
-      "rm /var/lib/vz/snippets/cloud_init_ubuntu_ceph_osd_${count.index}.yml",
+      "rm /var/lib/vz/snippets/cloud_init_ubuntu_ceph_rgws_${count.index}.yml",
     ]
   }
 }
 
-resource "proxmox_vm_qemu" "ceph_osd" {
-  count = var.node_count_osd
+resource "proxmox_vm_qemu" "ceph_rgws" {
+  count = var.node_count_rgws
   ## Wait for the cloud-config file to exist
   depends_on = [
-    null_resource.cloud_init_ubuntu_ceph_osd
+    null_resource.cloud_init_ubuntu_ceph_rgws
   ]
 
-  name        = "ceph-osd-${count.index}"
-  vmid        = "15${count.index}"
+  name        = "ceph-rgws-${count.index}"
+  vmid        = "16${count.index}"
   target_node = "pve"
 
   # Clone from debian-cloudinit template
@@ -56,8 +56,8 @@ resource "proxmox_vm_qemu" "ceph_osd" {
   os_type = "cloud-init"
 
   # Cloud init options
-  ipconfig0  = "ip=192.168.2.15${count.index}/22,gw=192.168.1.1"
-  cicustom   = "user=local:snippets/cloud_init_ubuntu_ceph_osd_${count.index}.yml"
+  ipconfig0  = "ip=192.168.2.16${count.index}/22,gw=192.168.1.1"
+  cicustom   = "user=local:snippets/cloud_init_ubuntu_ceph_rgws_${count.index}.yml"
 
   memory = 8000
   cores = 4
@@ -69,12 +69,6 @@ resource "proxmox_vm_qemu" "ceph_osd" {
 
   disk {
     size    = "20G"
-    type    = "virtio"
-    storage = "local-lvm"
-  }
-
-  disk {
-    size    = "40G"
     type    = "virtio"
     storage = "local-lvm"
   }
