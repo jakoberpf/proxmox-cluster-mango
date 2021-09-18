@@ -6,7 +6,6 @@
     - role: networking/zerotier
       become: true 
       vars:
-        skip_install: true
         zerotier_register_short_hostname: true
         zerotier_member_description: "Managed by Ansible"
         zerotier_member_identiy_private: "../artifacts/zerotier/identity.secret"

@@ -4,7 +4,6 @@ GIT_ROOT=$(git rev-parse --show-toplevel)
 
 declare -a secrets
 
-#secrets+=(".envrc")
 secrets+=("ansible/.vault_pass")
 secrets+=("ansible/artifacts/zerotier/identity.public")
 secrets+=("ansible/artifacts/zerotier/identity.secret")
