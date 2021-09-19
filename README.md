@@ -23,3 +23,6 @@ curl -H "Host: test.openstack.dev.jakoberpf.de" http://192.168.2.200
 https://openpower.ic.unicamp.br/post/integrating-openstack-ansible-with-lets-encrypt/
 https://gist.github.com/aptalca/ce05dded99ae0facc80fd361144b238c
 https://blog.linuxserver.io/2017/11/28/how-to-setup-a-reverse-proxy-with-letsencrypt-ssl-for-all-your-docker-apps/
+
+# Note: "iso not found"
+During boot of the installer this error message can appear. Solution is mostly to use another USB stick and use balenaEtcher for flashing the usb stick
