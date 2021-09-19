@@ -11,10 +11,10 @@ virt-customize -a hirsute-server-cloudimg-amd64.img --install qemu-guest-agent
 qm create 9002 -name ubuntu-hirsute-cloudinit -memory 1024 -net0 virtio,bridge=vmbr0 -cores 1 -sockets 1
 
 # Import the OpenStack disk image to Proxmox storage
-qm importdisk 9002 hirsute-server-cloudimg-amd64.img local-lvm
+qm importdisk 9002 hirsute-server-cloudimg-amd64.img local-zfs
 
 # Attach the disk to the virtual machine
-qm set 9002 -scsihw virtio-scsi-pci -virtio0 local-lvm:vm-9002-disk-0
+qm set 9002 -scsihw virtio-scsi-pci -virtio0 local-zfs:vm-9002-disk-0
 
 # Add a serial output
 qm set 9002 -serial0 socket
@@ -35,7 +35,7 @@ qm set 9002 -vcpus 1
 qm set 9002 -vga qxl
 
 # Set a second hard drive, using the inbuilt cloudinit drive
-qm set 9002 -ide2 local-lvm:cloudinit
+qm set 9002 -ide2 local-zfs:cloudinit
 
 # Resize the primary boot disk (otherwise it will be around 2G by default)
 # This step adds another 8G of disk space, but change this as you need to
