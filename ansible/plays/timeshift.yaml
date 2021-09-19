@@ -1,0 +1,21 @@
+---
+- name: Preprare the development machine with basic settings, packages and networking
+  hosts: machine
+
+  tasks:
+    # - name: Setup timeshift snapshot device
+    #   become: yes
+    #   shell: timeshift --snapshot-device /dev/sdf
+
+    # - name: Setup timeshift snapshot device
+    #   become: yes
+    #   shell: timeshift --btrfs
+
+    # - name: Setup timeshift snapshot device
+    #   become: yes
+    #   shell: btrfs quota enable /
+
+    # - name: Setup timeshift snapshot device
+    #   become: yes
+    #   shell: timeshift --create --comments "A clean Ubuntu 20.04LTS install with basic packages and settings"
+

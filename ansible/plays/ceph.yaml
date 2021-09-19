@@ -1,0 +1,37 @@
+---
+- name: Configure Ceph
+  hosts: machine
+
+  tasks:
+    # - name: Run and register output of "ceph osd crush rule ls"
+    #   shell: "ceph osd crush rule ls"
+    #   register: ceph_rules_list
+
+    # - name: Set fact of command output
+    #   set_fact: 
+    #     ceph_rules_list={{ ceph_rules_list.stdout }}
+
+    # - name: add new HDD replication rules if not present in output of "ceph osd crush rule ls"
+    #   shell: "ceph osd crush rule create-replicated replicated_hdd default osd hdd"
+    #   when: '"replicated_hdd" not in ceph_rules_list'
+
+    # - name: add new SSD replication rules if not present in output of "ceph osd crush rule ls"
+    #   shell: "ceph osd crush rule create-replicated replicated_ssd default osd ssd"
+    #   when: '"replicated_ssd" not in ceph_rules_list'
+
+    # - name: add new NVME replication rules if not present in output of "ceph osd crush rule ls"
+    #   shell: "ceph osd crush rule create-replicated replicated_nvme default osd nvme"
+    #   when: '"replicated_nvme" not in ceph_rules_list'
+
+# Activate Dashboard and managament functionalities
+# https://kb.iu.edu/d/adwf
+
+# https://www.inett.de/blog/2019/11/01/ceph-dashboard-v2-unter-proxmox-6-aktivieren/
+# https://pve.proxmox.com/wiki/User:Grin/Ceph_Object_Gateway
+# https://base64.co.za/enable-amazon-s3-interface/
+# https://dragontek.com/blog/post/adding-s3-capabilities-proxmox
+# https://devopstales.github.io/linux/proxmox-ceph-radosgw/
+
+# https://docs.ceph.com/en/octopus/mgr/dashboard/#enabling-the-object-gateway-management-frontend
+
+# https://computingforgeeks.com/configure-aws-s3-cli-for-ceph-object-gateway-storage/

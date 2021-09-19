@@ -9,5 +9,5 @@
 - name: Include zerotier setup
   include: zerotier.yaml
 
-- name: Include ceph setup
-  include: ceph.yaml
+# - name: Include ceph setup
+#   include: ceph.yaml
