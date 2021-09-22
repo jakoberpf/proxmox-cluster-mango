@@ -1,0 +1,41 @@
+---
+pve_group: dev
+pve_watchdog: ipmi
+# pve_ssl_private_key: "{{ lookup('file', pve_group + '/' + inventory_hostname + '.key') }}"
+# pve_ssl_certificate: "{{ lookup('file', pve_group + '/' + inventory_hostname + '.pem') }}"
+# pve_ssl_letsencrypt: yes
+pve_cluster_enabled: no
+pve_groups:
+  - name: automation
+    comment: Automation Users
+  - name: administrators
+    comment: Administrator Users
+pve_users:
+  - name: terraform@pve
+    email: terraform@automation.local
+    password: "{{ terraform_user_password }}"
+    firstname: Terraform
+    lastname: Automation User
+    comment: "This is the user for all terraform automation scripts"
+    groups: [ "automation" ]
+pve_acls:
+  - path: /
+    roles: [ "Administrator" ]
+    groups: [ "automation", "administrators" ]
+pve_roles:
+  - name: Monitoring
+    privileges:
+      - "Sys.Modify"
+      - "Sys.Audit"
+      - "Datastore.Audit"
+      - "VM.Monitor"
+      - "VM.Audit"
+# pve_storages:
+#   - name: localdir
+#     type: dir
+#     content: [ "images", "iso", "backup" ]
+#     path: /plop
+#     maxfiles: 4
+# pve_ssh_port: 22
+
+# interfaces_template: "interfaces-{{ pve_group }}.j2"

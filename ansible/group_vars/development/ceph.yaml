@@ -1,0 +1,64 @@
+pve_ceph_enabled: true
+pve_ceph_network: '192.168.0.0/16'
+pve_ceph_cluster_network: '192.168.0.0/16'
+pve_group: "development"
+pve_ceph_mon_group: "development"
+pve_ceph_mgr_group: "development"
+pve_ceph_mds_group: "development"
+# pve_ceph_osds:
+#   # OSD with everything on the same device
+#   - device: /dev/sdc
+#   # OSD with block.db/WAL on another device
+#   - device: /dev/sdd
+#     block.db: /dev/sdb1
+#   # encrypted OSD with everything on the same device
+#   - device: /dev/sdc
+#     encrypted: true
+#   # encrypted OSD with block.db/WAL on another device
+#   - device: /dev/sdd
+#     block.db: /dev/sdb1
+#     encrypted: true
+# # Crush rules for different storage classes
+# # By default 'type' is set to host, you can find valid types at (https://docs.ceph.com/en/latest/rados/operations/crush-map/)
+# # listed under 'TYPES AND BUCKETS'
+# pve_ceph_crush_rules:
+#   - name: replicated_rule
+#     type: osd # This is an example of how you can override a pre-existing rule
+#   - name: ssd
+#     class: ssd
+#     type: osd
+#     min-size: 2
+#     max-size: 8
+#   - name: hdd
+#     class: hdd
+#     type: host
+# # 2 Ceph pools for VM disks which will also be defined as Proxmox storages
+# # Using different CRUSH rules
+# pve_ceph_pools:
+#   - name: ssd
+#     pgs: 128
+#     rule: ssd
+#     application: rbd
+#     storage: true
+# # This Ceph pool uses custom size/replication values
+#   - name: hdd
+#     pgs: 32
+#     rule: hdd
+#     application: rbd
+#     storage: true
+#     size: 2
+#     min-size: 1
+# # This Ceph pool uses custom autoscale mode : "off" | "on" | "warn"> (default = "warn")
+#   - name: vm-storage
+#     pgs: 128
+#     rule: replicated_rule
+#     application: rbd
+#     autoscale_mode: "on"
+#     storage: true
+# pve_ceph_fs:
+# # A CephFS filesystem not defined as a Proxmox storage
+#   - name: backup
+#     pgs: 64
+#     rule: hdd
+#     storage: false
+#     mountpoint: /srv/proxmox/backup
