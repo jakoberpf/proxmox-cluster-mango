@@ -3,7 +3,6 @@ pve_group: dev
 pve_watchdog: ipmi
 # pve_ssl_private_key: "{{ lookup('file', pve_group + '/' + inventory_hostname + '.key') }}"
 # pve_ssl_certificate: "{{ lookup('file', pve_group + '/' + inventory_hostname + '.pem') }}"
-# pve_ssl_letsencrypt: yes
 pve_cluster_enabled: no
 pve_groups:
   - name: automation
