@@ -2,14 +2,7 @@
 - name: Preprare the development machine with basic settings, packages and networking
   hosts: development
 
-  roles:
-    - role: hypervisor/proxmox 
-      vars: 
-       pve_group: all,
-       pve_reboot_on_kernel_update: false
-
   tasks:
-  
     - name: Install basic packages
       become: yes
       apt:
@@ -20,6 +13,7 @@
           - htop
           - curl
           - timeshift
+          - python3-jmespath
         state: present
       register: apt_action
       retries: 100

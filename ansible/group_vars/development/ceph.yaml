@@ -6,9 +6,15 @@ pve_group: "development"
 pve_ceph_mon_group: "development"
 pve_ceph_mgr_group: "development"
 pve_ceph_mds_group: "development"
-# pve_ceph_osds:
-#   # OSD with everything on the same device
-#   - device: /dev/sdc
+pve_ceph_osds:
+  # zapping: ceph-volume lvm zap /dev/sdX --destro
+  - device: /dev/sdd
+  - device: /dev/sdf
+  - device: /dev/sdg
+  - device: /dev/sdh
+  - device: /dev/sdi
+  - device: /dev/sdj
+  - device: /dev/sdk
 #   # OSD with block.db/WAL on another device
 #   - device: /dev/sdd
 #     block.db: /dev/sdb1
@@ -22,9 +28,9 @@ pve_ceph_mds_group: "development"
 # # Crush rules for different storage classes
 # # By default 'type' is set to host, you can find valid types at (https://docs.ceph.com/en/latest/rados/operations/crush-map/)
 # # listed under 'TYPES AND BUCKETS'
-# pve_ceph_crush_rules:
-#   - name: replicated_rule
-#     type: osd # This is an example of how you can override a pre-existing rule
+pve_ceph_crush_rules:
+  - name: replicated_rule
+    type: osd
 #   - name: ssd
 #     class: ssd
 #     type: osd
@@ -35,7 +41,7 @@ pve_ceph_mds_group: "development"
 #     type: host
 # # 2 Ceph pools for VM disks which will also be defined as Proxmox storages
 # # Using different CRUSH rules
-# pve_ceph_pools:
+pve_ceph_pools:
 #   - name: ssd
 #     pgs: 128
 #     rule: ssd
@@ -49,17 +55,27 @@ pve_ceph_mds_group: "development"
 #     storage: true
 #     size: 2
 #     min-size: 1
-# # This Ceph pool uses custom autoscale mode : "off" | "on" | "warn"> (default = "warn")
-#   - name: vm-storage
-#     pgs: 128
-#     rule: replicated_rule
-#     application: rbd
-#     autoscale_mode: "on"
-#     storage: true
-# pve_ceph_fs:
-# # A CephFS filesystem not defined as a Proxmox storage
-#   - name: backup
-#     pgs: 64
-#     rule: hdd
-#     storage: false
-#     mountpoint: /srv/proxmox/backup
+  - name: vm-storage
+    pgs: 32
+    rule: replicated_rule
+    application: rbd
+    autoscale_mode: "on" # "off" | "on" | "warn"> (default = "warn")
+    storage: true
+  - name: block-storage
+    pgs: 32
+    rule: replicated_rule
+    application: rbd
+    autoscale_mode: "on" # "off" | "on" | "warn"> (default = "warn")
+    storage: false
+  - name: kubernetes-storage
+    pgs: 32
+    rule: replicated_rule
+    application: rbd
+    autoscale_mode: "on" # "off" | "on" | "warn"> (default = "warn")
+    storage: false
+pve_ceph_fs:
+  - name: backup-fs
+    pgs: 64
+    rule: replicated_rule
+    storage: false
+    mountpoint: /srv/proxmox/backup

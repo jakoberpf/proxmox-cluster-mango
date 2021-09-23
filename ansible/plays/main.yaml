@@ -3,6 +3,9 @@
 - name: Include basic initialisation
   include: base.yaml
 
+- name: Include basic initialisation
+  include: proxmox.yml
+
 # - name: Include timeshift setup
 #   include: timeshift.yaml
 
