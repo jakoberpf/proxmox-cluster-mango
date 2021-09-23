@@ -1,4 +1,4 @@
 ---
-pve_ssl_letsencrypt: yes
+# pve_ssl_letsencrypt: yes
 # certificate settings
 letsencrypt_account_email: "contact@jakoberpf.de"

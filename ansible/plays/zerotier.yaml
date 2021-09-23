@@ -1,6 +1,6 @@
 ---
 - name: Configure Zerotier
-  hosts: machine
+  hosts: development
 
   roles:
     - role: networking/zerotier
