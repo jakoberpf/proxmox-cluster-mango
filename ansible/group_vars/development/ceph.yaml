@@ -1,11 +1,15 @@
 ---
 pve_ceph_enabled: true
+
 pve_ceph_network: '192.168.0.0/16'
 pve_ceph_cluster_network: '192.168.0.0/16'
+
 pve_group: "development"
+
 pve_ceph_mon_group: "development"
 pve_ceph_mgr_group: "development"
 pve_ceph_mds_group: "development"
+
 pve_ceph_osds:
   # zapping: ceph-volume lvm zap /dev/sdX --destro
   - device: /dev/sdd
@@ -25,9 +29,7 @@ pve_ceph_osds:
 #   - device: /dev/sdd
 #     block.db: /dev/sdb1
 #     encrypted: true
-# # Crush rules for different storage classes
-# # By default 'type' is set to host, you can find valid types at (https://docs.ceph.com/en/latest/rados/operations/crush-map/)
-# # listed under 'TYPES AND BUCKETS'
+
 pve_ceph_crush_rules:
   - name: replicated_rule
     type: osd
@@ -39,22 +41,8 @@ pve_ceph_crush_rules:
 #   - name: hdd
 #     class: hdd
 #     type: host
-# # 2 Ceph pools for VM disks which will also be defined as Proxmox storages
-# # Using different CRUSH rules
+
 pve_ceph_pools:
-#   - name: ssd
-#     pgs: 128
-#     rule: ssd
-#     application: rbd
-#     storage: true
-# # This Ceph pool uses custom size/replication values
-#   - name: hdd
-#     pgs: 32
-#     rule: hdd
-#     application: rbd
-#     storage: true
-#     size: 2
-#     min-size: 1
   - name: vm-storage
     pgs: 32
     rule: replicated_rule
@@ -73,9 +61,9 @@ pve_ceph_pools:
     application: rbd
     autoscale_mode: "on" # "off" | "on" | "warn"> (default = "warn")
     storage: false
+
 pve_ceph_fs:
   - name: backup-fs
     pgs: 64
     rule: replicated_rule
     storage: false
-    mountpoint: /srv/proxmox/backup

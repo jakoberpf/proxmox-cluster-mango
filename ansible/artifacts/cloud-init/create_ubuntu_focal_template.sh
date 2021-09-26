@@ -14,7 +14,7 @@ qm create 9001 -name ubuntu-focal-cloudinit -memory 1024 -net0 virtio,bridge=vmb
 qm importdisk 9001 focal-server-cloudimg-amd64.img local-zfs
 
 # Attach the disk to the virtual machine
-qm set 9001 -scsihw virtio-scsi-pci -virtio0 local-zfs:vm-9000-disk-0
+qm set 9001 -scsihw virtio-scsi-pci -virtio0 local-zfs:vm-9001-disk-0
 
 # Add a serial output
 qm set 9001 -serial0 socket

@@ -15,6 +15,10 @@ resource "local_file" "cloud_init_ubuntu_kubernetes" {
   count = var.node_count
   content  = data.template_file.cloud_init_ubuntu_kubernetes[count.index].rendered
   filename = "${path.module}/files/cloud_init_ubuntu_kubernetes_${count.index}.cfg"
+
+  # depends_on = [
+  #   template_file.cloud_init_ubuntu_kubernetes,
+  # ]
 }
 
 # Transfer the file to the Proxmox Host
@@ -38,6 +42,10 @@ resource "null_resource" "cloud_init_ubuntu_kubernetes" {
       "rm /var/lib/vz/snippets/cloud_init_ubuntu_kubernetes_${count.index}.yml",
     ]
   }
+
+  depends_on = [
+    local_file.cloud_init_ubuntu_kubernetes,
+  ]
 }
 
 resource "proxmox_vm_qemu" "kubernetes" {
@@ -49,14 +57,14 @@ resource "proxmox_vm_qemu" "kubernetes" {
 
   name        = "kubernetes-${count.index}"
   vmid        = "23${count.index}"
-  target_node = "pve"
+  target_node = "dev"
 
   # Clone from debian-cloudinit template
   clone   = "ubuntu-focal-cloudinit"
   os_type = "cloud-init"
 
   # Cloud init options
-  ipconfig0  = "ip=192.168.2.11${count.index}/22,gw=192.168.1.1"
+  ipconfig0  = "ip=192.168.17.11${count.index}/16,gw=192.168.1.1"
   cicustom   = "user=local:snippets/cloud_init_ubuntu_kubernetes_${count.index}.yml"
 
   memory = 16000
@@ -70,7 +78,7 @@ resource "proxmox_vm_qemu" "kubernetes" {
   disk {
     size    = "20G"
     type    = "virtio"
-    storage = "local-lvm"
+    storage = "local-zfs"
   }
 
   # Set the network
@@ -87,6 +95,4 @@ resource "proxmox_vm_qemu" "kubernetes" {
       network
     ]
   }
-
-  guest_agent_ready_timeout = 60
 }
