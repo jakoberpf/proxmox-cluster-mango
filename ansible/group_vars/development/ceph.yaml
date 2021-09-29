@@ -12,13 +12,13 @@ pve_ceph_mds_group: "development"
 
 pve_ceph_osds:
   # zapping: ceph-volume lvm zap /dev/sdX --destro
+  - device: /dev/sda
+  - device: /dev/sdb
+  - device: /dev/sdc
   - device: /dev/sdd
+  - device: /dev/sde
   - device: /dev/sdf
   - device: /dev/sdg
-  - device: /dev/sdh
-  - device: /dev/sdi
-  - device: /dev/sdj
-  - device: /dev/sdk
 #   # OSD with block.db/WAL on another device
 #   - device: /dev/sdd
 #     block.db: /dev/sdb1
