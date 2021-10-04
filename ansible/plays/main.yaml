@@ -3,14 +3,14 @@
 - name: Include basic initialisation
   include: base.yaml
 
-- name: Include basic initialisation
-  include: proxmox.yml
-
 # - name: Include timeshift setup
 #   include: timeshift.yaml
 
 - name: Include zerotier setup
   include: zerotier.yaml
 
-# - name: Include ceph setup
-#   include: ceph.yaml
+- name: Include basic initialisation
+  include: proxmox.yml
+
+- name: Include ceph dashboard setup
+  include: ceph.dashboard.yaml
