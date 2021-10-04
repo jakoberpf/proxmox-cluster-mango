@@ -36,3 +36,4 @@ terraform/microstack/files/*.cfg
 terraform/kubernetes/files/*.cfg
 terraform/ceph/files/*.cfg
 terraform/apefactory/files/*.cfg
+.DS_Store
