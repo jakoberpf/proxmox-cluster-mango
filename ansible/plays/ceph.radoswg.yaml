@@ -26,7 +26,7 @@
               host = {{ ansible_hostname }}
               keyring = /etc/pve/priv/ceph.client.radosgw.keyring
               log file = /var/log/ceph/client.radosgw.$host.log
-              rgw_dns_name = s3.example.net
+              rgw_dns_name = s3.dev.jakoberpf.net
 
     - name: Install radosgw
       become: yes
