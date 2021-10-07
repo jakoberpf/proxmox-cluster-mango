@@ -1,6 +1,6 @@
 ---
 - name: Configure Ceph
-  hosts: machine
+  hosts: development
 
   tasks:
     # - name: Run and register output of "ceph osd crush rule ls"
@@ -22,9 +22,6 @@
     # - name: add new NVME replication rules if not present in output of "ceph osd crush rule ls"
     #   shell: "ceph osd crush rule create-replicated replicated_nvme default osd nvme"
     #   when: '"replicated_nvme" not in ceph_rules_list'
-
-# Activate Dashboard and managament functionalities
-# https://kb.iu.edu/d/adwf
 
 # https://www.inett.de/blog/2019/11/01/ceph-dashboard-v2-unter-proxmox-6-aktivieren/
 # https://pve.proxmox.com/wiki/User:Grin/Ceph_Object_Gateway

@@ -18,3 +18,9 @@
       register: apt_action
       retries: 100
       until: apt_action is success or ('Failed to lock apt for exclusive operation' not in apt_action.msg and '/var/lib/dpkg/lock' not in apt_action.msg)
+
+    - name: Enable nested virtualization # https://pve.proxmox.com/wiki/Nested_Virtualization
+      shell: |
+        echo "options kvm-amd nested=1" > /etc/modprobe.d/kvm-amd.conf
+        modprobe -r kvm_amd
+        modprobe kvm_amd
