@@ -52,4 +52,10 @@
       shell: "systemctl start ceph-radosgw@radosgw.{{ ansible_hostname }}"
 
 # https://docs.ceph.com/en/octopus/mgr/dashboard/#enabling-the-object-gateway-management-frontend
-
+# https://devopstales.github.io/linux/proxmox-ceph-radosgw/
+# https://pve.proxmox.com/wiki/User:Grin/Ceph_Object_Gateway
+# https://base64.co.za/enable-amazon-s3-interface/
+# https://computingforgeeks.com/configure-aws-s3-cli-for-ceph-object-gateway-storage/
+# ceph osd pool create .rgw.root 128
+# radosgw -f --cluster ceph --name client.radosgw.pve1 --setuser ceph --setgroup ceph
+# https://www.symmcom.com/docs/how-tos/storages/how-to-configure-s3-compatible-object-storage-on-ceph
