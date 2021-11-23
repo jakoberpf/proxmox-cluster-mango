@@ -7,6 +7,7 @@
       become: true 
       vars:
         zerotier_register_short_hostname: true
+        zerotier_member_register_short_hostname: "Proxmox-Development-0"
         zerotier_member_description: "Managed by Ansible"
         zerotier_member_identiy_private: "../artifacts/zerotier/identity.secret"
         zerotier_member_identiy_public: "../artifacts/zerotier/identity.public"
