@@ -1,19 +1,49 @@
 terraform {
   required_version = ">= 1.0.0"
   required_providers {
-    zerotier = {
-      source = "zerotier/zerotier"
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = "3.8.0"
     }
     proxmox = {
       source = "telmate/proxmox"
-      # version = "<version tag>"
+    }
+    remote = {
+      source  = "tenstad/remote"
+      version = "0.0.23"
+    }
+    zerotier = {
+      source = "zerotier/zerotier"
     }
   }
 }
 
-provider "zerotier" {}
+provider "cloudflare" {
+  email   = var.cloudflare_email
+  api_key = var.cloudflare_api_key
+}
 
 provider "proxmox" {
-  # https://github.com/Telmate/terraform-provider-proxmox/blob/master/docs/index.md
   pm_api_url = "https://10.147.19.60:8006/api2/json"
 }
+
+provider "remote" {
+  alias = "proxmox"
+  conn {
+    user        = "root"
+    private_key = file("../.ssh/automation")
+    host        = "10.147.19.60"
+  }
+}
+
+provider "remote" {
+  alias = "gateway1"
+  conn {
+    user        = "ubuntu"
+    private_key = file("../.ssh/automation")
+    host        = "0.gateway.dns.erpf.de"
+    sudo        = true
+  }
+}
+
+provider "zerotier" {}
