@@ -52,11 +52,7 @@ variable "zerotier_network_id_development" {
   description = "The zerotier network id of the development network"
 }
 
-variable "zerotier_network_id" {
-  type        = string
-  description = "The ID of the zerotier network"
-}
-variable "zerotier_proxmox_ip" {
+variable "zerotier_member_ip_development" {
   type        = string
   description = "The IP to assign to the bastion"
 }

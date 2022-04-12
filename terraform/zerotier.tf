@@ -3,9 +3,9 @@ resource "zerotier_identity" "proxmox" {}
 resource "zerotier_member" "proxmox" {
   name       = "proxmox-development"
   member_id  = zerotier_identity.proxmox.id
-  network_id = var.zerotier_network_id
+  network_id = var.zerotier_network_id_development
   ip_assignments = [
-    var.zerotier_proxmox_ip
+    var.zerotier_member_ip_development
   ]
 }
 
