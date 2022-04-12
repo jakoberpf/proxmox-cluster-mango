@@ -24,7 +24,9 @@ provider "cloudflare" {
 }
 
 provider "proxmox" {
-  pm_api_url = "https://10.147.19.60:8006/api2/json"
+  pm_api_url  = var.proxmox_terraform_host
+  pm_user     = var.proxmox_terraform_user
+  pm_password = var.proxmox_terraform_password
 }
 
 provider "remote" {
@@ -46,4 +48,6 @@ provider "remote" {
   }
 }
 
-provider "zerotier" {}
+provider "zerotier" {
+  zerotier_central_token = var.zerotier_central_token
+}
