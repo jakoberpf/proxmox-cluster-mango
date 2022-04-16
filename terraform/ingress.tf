@@ -1,6 +1,5 @@
 module "development_ingress" {
-  source  = "jakoberpf/gateway-ingress/erpf"
-  version = "0.0.5"
+  source  = "/Users/jakoberpf/Code/jakoberpf/terraform/modules/erpf/caddy-ingress" # "jakoberpf/gateway-ingress/erpf"
 
   providers = {
     cloudflare = cloudflare
