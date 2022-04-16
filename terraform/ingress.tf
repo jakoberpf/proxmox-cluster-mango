@@ -4,7 +4,7 @@ module "development_ingress" {
 
   providers = {
     cloudflare = cloudflare
-    remote     = remote.gateway1
+    remote     = remote.gateway
   }
 
   domains = [
@@ -16,4 +16,5 @@ module "development_ingress" {
   cloudflare_email   = var.cloudflare_email
   cloudflare_zone_id = var.cloudflare_zone_id
   cloudflare_token   = var.cloudflare_token
+  cloudflare_record_value = "primary.gateway.dns.erpf.de"
 }

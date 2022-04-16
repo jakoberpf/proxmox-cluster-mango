@@ -39,11 +39,11 @@ provider "remote" {
 }
 
 provider "remote" {
-  alias = "gateway1"
+  alias = "gateway"
   conn {
     user        = "ubuntu"
     private_key = file("../.ssh/automation")
-    host        = "0.gateway.dns.erpf.de"
+    host        = "primary.gateway.dns.erpf.de"
     sudo        = true
   }
 }
