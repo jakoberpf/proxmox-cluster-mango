@@ -17,11 +17,11 @@ cd $GIT_ROOT
 # # Get roles from galaxy
 # ansible-galaxy install systemli.letsencrypt
 
+# Make sure virtual environment is activated
+source .venv/ansible/bin/activate
+
 # Run terraform apply
 cd $GIT_ROOT/ansible
-
-# Make sure virtual environment is activated
-source .venv/bin/activate
 
 # Run ansible
 ansible-playbook plays/main.yaml
