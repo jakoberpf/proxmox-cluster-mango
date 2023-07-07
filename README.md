@@ -15,6 +15,9 @@ terraform import openstack_identity_role_v3.admin <admin-role-id>
 terraform import openstack_identity_user_v3.admin <admin-user-id>
 terraform import openstack_identity_project_v3.service <service-project-id>
 ```
+
+How to use ansible-vault https://www.digitalocean.com/community/tutorials/how-to-use-vault-to-protect-sensitive-ansible-data
+
 ## Troubleshooting
 alias sshb="ssh -J $BASTION_HOST@$BASTION_IP"
 curl -H "Host: test.openstack.dev.jakoberpf.de" http://192.168.2.200
