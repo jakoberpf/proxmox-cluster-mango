@@ -43,3 +43,5 @@ qm resize 9001 virtio0 +8G
 
 # Convert the VM to the template
 qm template 9001
+
+rm focal-server-cloudimg-amd64.img
