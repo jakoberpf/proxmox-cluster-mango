@@ -10,15 +10,15 @@ pve_ceph_mon_group: "development"
 pve_ceph_mgr_group: "development"
 pve_ceph_mds_group: "development"
 
-pve_ceph_osds:
+# pve_ceph_osds:
   # zapping: ceph-volume lvm zap /dev/sdX --destro
-  - device: /dev/sda
-  - device: /dev/sdb
-  - device: /dev/sdc
-  - device: /dev/sdd
-  - device: /dev/sde
-  - device: /dev/sdf
-  - device: /dev/sdg
+  # - device: /dev/sda
+  # - device: /dev/sdb
+  # - device: /dev/sdc
+  # - device: /dev/sdd
+  # - device: /dev/sde
+  # - device: /dev/sdf
+  # - device: /dev/sdg
 #   # OSD with block.db/WAL on another device
 #   - device: /dev/sdd
 #     block.db: /dev/sdb1
@@ -42,28 +42,28 @@ pve_ceph_crush_rules:
 #     class: hdd
 #     type: host
 
-pve_ceph_pools:
-  - name: vm-storage
-    pgs: 32
-    rule: replicated_rule
-    application: rbd
-    autoscale_mode: "on" # "off" | "on" | "warn"> (default = "warn")
-    storage: true
-  - name: block-storage
-    pgs: 32
-    rule: replicated_rule
-    application: rbd
-    autoscale_mode: "on" # "off" | "on" | "warn"> (default = "warn")
-    storage: false
-  - name: kubernetes-storage
-    pgs: 32
-    rule: replicated_rule
-    application: rbd
-    autoscale_mode: "on" # "off" | "on" | "warn"> (default = "warn")
-    storage: false
+# pve_ceph_pools:
+#   - name: vm-storage
+#     pgs: 32
+#     rule: replicated_rule
+#     application: rbd
+#     autoscale_mode: "on" # "off" | "on" | "warn"> (default = "warn")
+#     storage: true
+#   - name: block-storage
+#     pgs: 32
+#     rule: replicated_rule
+#     application: rbd
+#     autoscale_mode: "on" # "off" | "on" | "warn"> (default = "warn")
+#     storage: false
+#   - name: kubernetes-storage
+#     pgs: 32
+#     rule: replicated_rule
+#     application: rbd
+#     autoscale_mode: "on" # "off" | "on" | "warn"> (default = "warn")
+#     storage: false
 
-pve_ceph_fs:
-  - name: backup-fs
-    pgs: 64
-    rule: replicated_rule
-    storage: false
+# pve_ceph_fs:
+#   - name: backup-fs
+#     pgs: 64
+#     rule: replicated_rule
+#     storage: false

@@ -5,11 +5,20 @@ pve_watchdog: ipmi
 # pve_ssl_certificate: "{{ lookup('file', pve_group + '/' + inventory_hostname + '.pem') }}"
 pve_cluster_enabled: no
 pve_groups:
+  - name: administrators
+    comment: Administrators
   - name: automation
     comment: Automation Users
-  - name: administrators
-    comment: Administrator Users
+  - name: developers
+    comment: Developer Users
 pve_users:
+  - name: packer@pve
+    email: packer@automation.local
+    password: "packer"
+    firstname: Packer
+    lastname: Automation User
+    comment: "This is the user for all packer automation scripts"
+    groups: [ "automation" ]
   - name: terraform@pve
     email: terraform@automation.local
     password: "{{ terraform_user_password }}"
@@ -20,7 +29,16 @@ pve_users:
 pve_acls:
   - path: /
     roles: [ "Administrator" ]
-    groups: [ "automation", "administrators" ]
+    groups: [ "administrators" ]
+  - path: /
+    roles: [ "Monitoring" ]
+    groups: [ "developers" ]
+  - path: /
+    roles: [ "Terraform" ]
+    groups: [ "automation" ]
+  - path: /
+    roles: [ "Packer" ]
+    groups: [ "automation" ]
 pve_roles:
   - name: Monitoring
     privileges:
@@ -29,6 +47,39 @@ pve_roles:
       - "Datastore.Audit"
       - "VM.Monitor"
       - "VM.Audit"
+  - name: Terraform
+    privileges:
+      - "VM.Allocate"
+      - "VM.Clone"
+      - "VM.Config.CDROM"
+      - "VM.Config.CPU"
+      - "VM.Config.Cloudinit"
+      - "VM.Config.Disk"
+      - "VM.Config.HWType"
+      - "VM.Config.Memory"
+      - "VM.Config.Network"
+      - "VM.Config.Options"
+      - "VM.Monitor"
+      - "VM.Audit"
+      - "VM.PowerMgmt"
+      - "Datastore.AllocateSpace"
+      - "Datastore.Audit"
+  - name: Packer
+    privileges:
+      - VM.Allocate 
+      - VM.Config.Disk 
+      - VM.Config.CPU
+      - VM.Config.Memory 
+      - Datastore.AllocateSpace 
+      - Sys.Modify 
+      - VM.Config.Options 
+      - VM.Audit 
+      - VM.Console 
+      - VM.Config.CDROM 
+      - VM.Config.Network 
+      - VM.PowerMgmt 
+      - VM.Config.HWType 
+      - VM.Monitor
 # pve_storages:
 #   - name: localdir
 #     type: dir
