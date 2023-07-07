@@ -3,6 +3,17 @@
   hosts: development
 
   tasks:
+    ### Proxmox repository # https://github.com/chriswayg/ansible-proxmox/blob/master/tasks/main.yml
+    - name: Remove Proxmox Enterprise repository
+      apt_repository:
+        repo: 'deb https://enterprise.proxmox.com/debian bullseye pve-enterprise'
+        state: absent
+
+    - name: Use Proxmox free repository
+      apt_repository:
+        repo: 'deb http://download.proxmox.com/debian/pve bullseye pve-no-subscription'
+        state: present
+
     - name: Install basic packages
       become: yes
       apt:
