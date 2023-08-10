@@ -6,14 +6,11 @@
 # - name: Include timeshift setup
 #   include: timeshift.yaml
 
-- name: Include zerotier setup
-  include: zerotier.yaml
+# - name: Include basic initialisation
+#   include: proxmox.yml
 
-- name: Include basic initialisation
-  include: proxmox.yml
+# - name: Include ceph dashboard setup
+#   include: ceph.dashboard.yaml
 
-- name: Include ceph dashboard setup
-  include: ceph.dashboard.yaml
-
-- name: Include ceph radosgw setup
-  include: ceph.radoswg.yaml
+# - name: Include ceph radosgw setup
+#   include: ceph.radoswg.yaml

@@ -4,11 +4,11 @@ pve_ceph_enabled: true
 pve_ceph_network: '192.168.0.0/16'
 pve_ceph_cluster_network: '192.168.0.0/16'
 
-pve_group: "development"
+pve_group: "mango"
 
-pve_ceph_mon_group: "development"
-pve_ceph_mgr_group: "development"
-pve_ceph_mds_group: "development"
+pve_ceph_mon_group: "mango"
+pve_ceph_mgr_group: "mango"
+pve_ceph_mds_group: "mango"
 
 # pve_ceph_osds:
   # zapping: ceph-volume lvm zap /dev/sdX --destro
