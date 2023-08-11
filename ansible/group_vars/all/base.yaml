@@ -66,19 +66,19 @@ pve_roles:
       - "Datastore.Audit"
   - name: Packer
     privileges:
-      - VM.Allocate 
-      - VM.Config.Disk 
+      - VM.Allocate
+      - VM.Config.Disk
       - VM.Config.CPU
-      - VM.Config.Memory 
-      - Datastore.AllocateSpace 
-      - Sys.Modify 
-      - VM.Config.Options 
-      - VM.Audit 
-      - VM.Console 
-      - VM.Config.CDROM 
-      - VM.Config.Network 
-      - VM.PowerMgmt 
-      - VM.Config.HWType 
+      - VM.Config.Memory
+      - Datastore.AllocateSpace
+      - Sys.Modify
+      - VM.Config.Options
+      - VM.Audit
+      - VM.Console
+      - VM.Config.CDROM
+      - VM.Config.Network
+      - VM.PowerMgmt
+      - VM.Config.HWType
       - VM.Monitor
 # pve_storages:
 #   - name: localdir

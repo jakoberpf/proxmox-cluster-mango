@@ -8,7 +8,7 @@
     #   register: ceph_rules_list
 
     # - name: Set fact of command output
-    #   set_fact: 
+    #   set_fact:
     #     ceph_rules_list={{ ceph_rules_list.stdout }}
 
     # - name: add new HDD replication rules if not present in output of "ceph osd crush rule ls"

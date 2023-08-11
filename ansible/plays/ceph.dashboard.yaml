@@ -30,7 +30,7 @@
 
     - name: iptables -t nat -A POSTROUTING -p tcp -d 10.147.19.60 --dport 8443 -j SNAT --to-source 192.168.0.135
       shell: iptables -t nat -A POSTROUTING -p tcp -d 10.147.19.60 --dport 8443 -j SNAT --to-source 192.168.0.135
-  
+
     - name: iptables -t nat -A POSTROUTING -j MASQUERADE
       shell: "iptables -t nat -A POSTROUTING -j MASQUERADE"
 
@@ -42,4 +42,3 @@
 # https://docs.ceph.com/en/pacific/mgr/dashboard/
 # https://forum.proxmox.com/threads/nautilus-activating-ceph-dashboard.85961/
 # https://docs.ceph.com/en/octopus/mgr/dashboard/#enabling-the-object-gateway-management-frontend
-
