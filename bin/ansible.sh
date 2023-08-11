@@ -4,7 +4,7 @@ cd $GIT_ROOT
 
 # # Create virtual environment
 # pyenv install 3.9.6
-# pyenv local 3.9.6 
+# pyenv local 3.9.6
 # python -m venv .venv
 
 # # Activate virtual environment

@@ -19,7 +19,7 @@ case ${machine} in
     etherwake 40:b0:76:d7:f1:2a
     ;;
 
-  Mac)  
+  Mac)
     brew install wakeonlan
     wakeonlan 40:b0:76:d7:f1:2a
     ;;
