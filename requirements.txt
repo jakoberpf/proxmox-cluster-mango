@@ -1,0 +1,5 @@
+# Local node-management and validation toolchain.
+ansible-core>=2.19,<2.20
+ansible-lint>=25,<26
+pre-commit>=4,<5
+yamllint>=1.37,<2

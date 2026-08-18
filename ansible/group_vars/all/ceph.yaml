@@ -1,69 +1,10 @@
 ---
-pve_ceph_enabled: true
-
-pve_ceph_network: '192.168.0.0/16'
-pve_ceph_cluster_network: '192.168.0.0/16'
-
-pve_group: "mango"
-
-pve_ceph_mon_group: "mango"
-pve_ceph_mgr_group: "mango"
-pve_ceph_mds_group: "mango"
-
-# pve_ceph_osds:
-  # zapping: ceph-volume lvm zap /dev/sdX --destro
-  # - device: /dev/sda
-  # - device: /dev/sdb
-  # - device: /dev/sdc
-  # - device: /dev/sdd
-  # - device: /dev/sde
-  # - device: /dev/sdf
-  # - device: /dev/sdg
-#   # OSD with block.db/WAL on another device
-#   - device: /dev/sdd
-#     block.db: /dev/sdb1
-#   # encrypted OSD with everything on the same device
-#   - device: /dev/sdc
-#     encrypted: true
-#   # encrypted OSD with block.db/WAL on another device
-#   - device: /dev/sdd
-#     block.db: /dev/sdb1
-#     encrypted: true
-
-pve_ceph_crush_rules:
-  - name: replicated_rule
-    type: osd
-#   - name: ssd
-#     class: ssd
-#     type: osd
-#     min-size: 2
-#     max-size: 8
-#   - name: hdd
-#     class: hdd
-#     type: host
-
-# pve_ceph_pools:
-#   - name: vm-storage
-#     pgs: 32
-#     rule: replicated_rule
-#     application: rbd
-#     autoscale_mode: "on" # "off" | "on" | "warn"> (default = "warn")
-#     storage: true
-#   - name: block-storage
-#     pgs: 32
-#     rule: replicated_rule
-#     application: rbd
-#     autoscale_mode: "on" # "off" | "on" | "warn"> (default = "warn")
-#     storage: false
-#   - name: kubernetes-storage
-#     pgs: 32
-#     rule: replicated_rule
-#     application: rbd
-#     autoscale_mode: "on" # "off" | "on" | "warn"> (default = "warn")
-#     storage: false
-
-# pve_ceph_fs:
-#   - name: backup-fs
-#     pgs: 64
-#     rule: replicated_rule
-#     storage: false
+# Ceph is audit-only in this repository. OSD creation, zapping, pool deletion,
+# and topology changes require explicit maintenance runbooks and approval.
+mango_ceph_fsid: 438cbb6e-5e6e-42b5-b098-40980ad1ea4f
+mango_ceph_public_network: 192.168.8.0/21
+mango_ceph_cluster_network: 192.168.8.0/21
+mango_ceph_monitor_name: mango-new
+mango_ceph_monitor_address: 192.168.8.56
+mango_ceph_filesystem: lake_v1
+mango_ceph_osd_count: 6

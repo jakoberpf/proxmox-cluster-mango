@@ -1,0 +1,58 @@
+---
+mango_rgw_phase: audit
+
+mango_rgw_ceph_version: 18.2.4-pve3
+mango_rgw_repository: deb http://download.proxmox.com/debian/ceph-reef bookworm no-subscription
+
+mango_rgw_daemon_id: rgw.mango
+mango_rgw_client_id: client.rgw.mango
+mango_rgw_zone: default
+mango_rgw_service: ceph-radosgw@rgw.mango.service
+
+mango_rgw_fqdn: s3.mango.cloudsium.de
+mango_rgw_wildcard_fqdn: "*.s3.mango.cloudsium.de"
+mango_rgw_listen_address: 192.168.8.56
+mango_rgw_port: 7480
+
+mango_rgw_pg_num: 8
+mango_rgw_existing_pools:
+  - .rgw.root
+  - default.rgw.log
+  - default.rgw.control
+  - default.rgw.meta
+mango_rgw_replicated_pools:
+  - default.rgw.buckets.index
+  - default.rgw.buckets.non-ec
+mango_rgw_data_pool: default.rgw.buckets.data
+mango_rgw_ec_profile: mango_rgw_ec42osd
+mango_rgw_recovery_dir: /root/ceph-rgw-preparation-20260817
+mango_rgw_recovery_exports:
+  .rgw.root: rgw-root.rados
+  default.rgw.log: default-rgw-log.rados
+  default.rgw.control: default-rgw-control.rados
+  default.rgw.meta: default-rgw-meta.rados
+
+# Let's Encrypt via the Cloudflare DNS-01 challenge. Supply the scoped
+# Cloudflare API token through Ansible Vault. The issued certificate covers
+# both mango_rgw_fqdn and mango_rgw_wildcard_fqdn; certbot.timer renews it and
+# the deploy hook assembles mango_rgw_tls_pem_path and reloads RGW.
+mango_rgw_acme_email: postmaster@cloudsium.de
+mango_rgw_cloudflare_api_token: "{{ vault_mango_rgw_cloudflare_api_token | default('') }}"
+mango_rgw_cloudflare_credentials_path: /etc/letsencrypt/cloudflare.ini
+mango_rgw_letsencrypt_dir: "/etc/letsencrypt/live/{{ mango_rgw_fqdn }}"
+mango_rgw_tls_pem_path: /etc/ceph/rgw-mango.pem
+# PVE ceph.conf expects keyrings under /etc/pve/priv/ceph.<name>.keyring.
+mango_rgw_keyring_path: "/etc/pve/priv/ceph.{{ mango_rgw_client_id }}.keyring"
+
+mango_rgw_frontend: >-
+  beast ssl_endpoint={{ mango_rgw_listen_address }}:{{ mango_rgw_port }}
+  ssl_certificate={{ mango_rgw_tls_pem_path }}
+mango_rgw_config:
+  - name: rgw_frontends
+    value: "{{ mango_rgw_frontend }}"
+  - name: rgw_zone
+    value: "{{ mango_rgw_zone }}"
+  - name: rgw_dns_name
+    value: "{{ mango_rgw_fqdn }}"
+  - name: rgw_enable_usage_log
+    value: "true"

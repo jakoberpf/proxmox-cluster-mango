@@ -1,31 +1,67 @@
-# development-machine
-This repository is composed of some ansible playbooks and terraform to boostrap and setup an all in one deployment of openstack and ceph. The order of execution is ??
+# mango
 
-## Configurations
+Node and cluster-management repository for the standalone Proxmox VE host
+`mango`. It manages the physical host and shared platform contract; application
+VMs, LXCs, and their Terraform state belong in separate stack repositories.
 
-## Runbook
+## Scope
 
-### Ansible
-ansible localhost -m include_role -a name=octavia_certs --extra-vars "octavia_cert_client_password=testing"
-### Terraform
-Before running any terraform, the init and setup ansible playbook must be successfully run to have a working openstack and ceph deployment ready. Because we want to manage some admin ressources we also need to import some terraform ressources first. For this you need to login into the web dashboard or use the openstack cli to retrieve the ids of the admin role and user.
+- Host baseline, APT sources, hostname, time sync, and persistent networking.
+- Proxmox datacenter/node policy, future RBAC, resource pools, and API tokens.
+- Storage attachment, ZFS maintenance policy, and Ceph health/topology contract.
+- Production drift audits and explicit maintenance runbooks.
+- Guest ID/ownership registry without managing guest definitions.
 
+See [management architecture](docs/architecture.md) for the complete ownership
+boundary and stack-repository contract.
+
+## Live node
+
+- Proxmox VE 8.4.10, standalone node `mango`.
+- LAN/SSH: `192.168.8.56`, bridge `vmbr0`, gateway `192.168.8.1`.
+- NetBird: `100.76.203.103`, `mango.cloudsium.home`.
+- Ceph Reef: 6 OSDs, monitor `mango-new`, CephFS `lake_v1`.
+- Public and cluster networks: `192.168.8.0/21`.
+
+The observed inventory and unresolved issues are recorded in
+[live state](docs/live-state.md) and the prioritized
+[remediation backlog](docs/remediation.md).
+
+The proposed Ceph S3 service is documented in [the RGW runbook](docs/s3.md).
+
+## Commands
+
+```sh
+make setup                         # install local Ansible/lint tooling
+make lint                          # YAML, shell, and whitespace checks
+make syntax                        # Ansible syntax only
+make audit                         # read-only live health/drift gates
+make plan                          # Ansible --check --diff against mango
+make apply CONFIRM=mango           # apply only after reviewing the plan
 ```
-terraform import openstack_identity_role_v3.admin <admin-role-id>
-terraform import openstack_identity_user_v3.admin <admin-user-id>
-terraform import openstack_identity_project_v3.service <service-project-id>
+
+There is deliberately no combined deploy target. Terraform apply is disabled in
+this repository; see [the Terraform boundary](terraform/README.md).
+
+## Repository layout
+
+```text
+ansible/               Host configuration, audits, and opt-in node roles
+docs/                  Architecture, live state, remediation, and runbooks
+inventory/guests.yaml  VMID and ownership registry only
+terraform/README.md    Terraform boundary and legacy-state notice
+bin/                   Guarded local command wrappers
 ```
 
-How to use ansible-vault https://www.digitalocean.com/community/tutorials/how-to-use-vault-to-protect-sensitive-ansible-data
+## Safety model
 
-## Troubleshooting
-alias sshb="ssh -J $BASTION_HOST@$BASTION_IP"
-curl -H "Host: test.openstack.dev.jakoberpf.de" http://192.168.2.200
+- Always run `make audit` and `make plan` before apply.
+- The default play never upgrades packages, reloads networking, unloads KVM,
+  changes GPU ownership, or mutates Ceph topology.
+- Ceph OSD/pool/monitor operations, network activation, package upgrades,
+  firewall/SSH changes, and reboots are separate maintenance operations.
+- Do not commit vault passwords, API tokens, Terraform variables/state, SSH keys,
+  NetBird identities, or decrypted secrets.
+- Do not commit or push without explicit approval.
 
-## TlS Support
-https://openpower.ic.unicamp.br/post/integrating-openstack-ansible-with-lets-encrypt/
-https://gist.github.com/aptalca/ce05dded99ae0facc80fd361144b238c
-https://blog.linuxserver.io/2017/11/28/how-to-setup-a-reverse-proxy-with-letsencrypt-ssl-for-all-your-docker-apps/
-
-# Note: "iso not found"
-During boot of the installer this error message can appear. Solution is mostly to use another USB stick and use balenaEtcher for flashing the usb stick
+See the [reconciliation workflow](docs/reconciliation.md) for exact procedures.

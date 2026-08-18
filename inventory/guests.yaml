@@ -1,0 +1,55 @@
+---
+# Allocation registry only. Guest definitions belong to stack repositories.
+guests:
+  - vmid: 100
+    name: macOS-Workspace
+    type: qemu
+    owner: unassigned
+  - vmid: 101
+    name: Ubuntu-Workspace
+    type: qemu
+    owner: unassigned
+  - vmid: 102
+    name: Windows-Workspace
+    type: qemu
+    owner: unassigned
+  - vmid: 103
+    name: macOS-Workspace
+    type: qemu
+    owner: unassigned
+  - vmid: 105
+    name: pihole-primary
+    type: lxc
+    owner: ../stacks/pihole
+  - vmid: 106
+    name: pihole-secondary
+    type: lxc
+    owner: ../stacks/pihole
+  - vmid: 107
+    name: pihole-tertiary
+    type: lxc
+    owner: ../stacks/pihole
+  - vmid: 108
+    name: OpenClaw-Jakob
+    type: qemu
+    owner: unassigned
+  - vmid: 201
+    name: Backblaze
+    type: qemu
+    owner: unassigned
+  - vmid: 3001
+    name: athena-production-qbd-controlplane-0-dzi
+    type: qemu
+    owner: external
+  - vmid: 3011
+    name: athena-production-qbd-worker-0-ayv
+    type: qemu
+    owner: external
+  - vmid: 3012
+    name: athena-production-qbd-worker-1-roa
+    type: qemu
+    owner: external
+  - vmid: 3013
+    name: athena-production-qbd-worker-2-olr
+    type: qemu
+    owner: external

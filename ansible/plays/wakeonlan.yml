@@ -1,14 +1,14 @@
 ---
-# convert to role https://ryan.himmelwright.net/post/foundryvtt-service-ansible-role/
-- name: Setup wakeonlan
-  hosts: development
+- name: Configure Wake-on-LAN on mango
+  hosts: proxmox_nodes
+  gather_facts: false
+
+  pre_tasks:
+    - name: Require explicit confirmation outside check mode
+      ansible.builtin.assert:
+        that:
+          - ansible_check_mode or (wakeonlan_confirm | default('')) == 'mango-wol'
+        fail_msg: "Preview with --check --diff; apply with -e wakeonlan_confirm=mango-wol."
 
   roles:
     - role: wakeonlan
-      vars:
-        eth_nic: "enp5s0"
-
-  tasks:
-    - name: Configure wakeonlan for ProxmoxNode
-      become: yes
-      shell: pvenode config set -wakeonlan 40:b0:76:d7:f1:2a

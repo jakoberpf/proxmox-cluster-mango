@@ -1,0 +1,87 @@
+---
+- name: Verify the RGW target identity
+  ansible.builtin.assert:
+    that:
+      - inventory_hostname == mango_hostname
+      - ansible_facts.hostname == mango_hostname
+      - ansible_facts.virtualization_role == 'host'
+
+- name: Read Ceph status for RGW preflight
+  ansible.builtin.command: ceph status --format json
+  register: mango_rgw_ceph_status_command
+  changed_when: false
+  check_mode: false
+
+- name: Count unclean PGs for RGW preflight
+  ansible.builtin.shell: >-
+    set -o pipefail && ceph pg dump pgs_brief --format json 2>/dev/null |
+    jq '[.pg_stats[] | select((.state | startswith("active+clean")) | not)] | length'
+  args:
+    executable: /bin/bash
+  register: mango_rgw_bad_pgs_command
+  changed_when: false
+  check_mode: false
+
+- name: Read Ceph pool configuration for RGW preflight
+  ansible.builtin.command: ceph osd pool ls detail --format json
+  register: mango_rgw_pool_details_command
+  changed_when: false
+  check_mode: false
+
+- name: Read RGW users without displaying keys
+  ansible.builtin.command: radosgw-admin user list
+  register: mango_rgw_users_command
+  changed_when: false
+  check_mode: false
+
+- name: Read installed RGW package version
+  ansible.builtin.shell: >-
+    dpkg-query -W -f='${db:Status-Abbrev} ${Version}' radosgw 2>/dev/null || true
+  args:
+    executable: /bin/bash
+  register: mango_rgw_package_command
+  changed_when: false
+  check_mode: false
+
+- name: Gather service state for RGW preflight
+  ansible.builtin.service_facts:
+
+- name: Resolve the planned S3 endpoint
+  ansible.builtin.command: getent ahostsv4 {{ mango_rgw_fqdn }}
+  register: mango_rgw_dns_command
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Parse RGW preflight state
+  ansible.builtin.set_fact:
+    mango_rgw_ceph_status: "{{ mango_rgw_ceph_status_command.stdout | from_json }}"
+    mango_rgw_pool_details: "{{ mango_rgw_pool_details_command.stdout | from_json }}"
+    mango_rgw_pool_names: >-
+      {{ (mango_rgw_pool_details_command.stdout | from_json) |
+         map(attribute='pool_name') | list }}
+
+- name: Enforce RGW preflight safety gates
+  ansible.builtin.assert:
+    that:
+      - mango_rgw_ceph_status.fsid == mango_ceph_fsid
+      - mango_rgw_ceph_status.osdmap.num_osds | int == mango_ceph_osd_count
+      - mango_rgw_ceph_status.osdmap.num_up_osds | int == mango_ceph_osd_count
+      - mango_rgw_ceph_status.osdmap.num_in_osds | int == mango_ceph_osd_count
+      - mango_rgw_bad_pgs_command.stdout | int == 0
+
+- name: Report RGW preparation state
+  ansible.builtin.debug:
+    msg:
+      phase: "{{ mango_rgw_phase }}"
+      ceph_health: "{{ mango_rgw_ceph_status.health.status }}"
+      osds: >-
+        {{ mango_rgw_ceph_status.osdmap.num_up_osds }}/{{ mango_rgw_ceph_status.osdmap.num_osds }} up
+      unclean_pgs: "{{ mango_rgw_bad_pgs_command.stdout | int }}"
+      rgw_pools: "{{ mango_rgw_pool_names | select('search', 'rgw') | list }}"
+      rgw_users: "{{ mango_rgw_users_command.stdout | from_json }}"
+      rgw_package: "{{ mango_rgw_package_command.stdout | default('not installed', true) }}"
+      rgw_service: >-
+        {{ ansible_facts.services[mango_rgw_service].state
+           if mango_rgw_service in ansible_facts.services else 'absent' }}
+      endpoint_dns: "{{ mango_rgw_dns_command.stdout_lines | default([]) | first | default('unresolved') }}"

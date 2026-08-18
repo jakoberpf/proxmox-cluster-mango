@@ -1,91 +1,28 @@
 ---
-pve_group: mango
-pve_watchdog: ipmi
-# pve_ssl_private_key: "{{ lookup('file', pve_group + '/' + inventory_hostname + '.key') }}"
-# pve_ssl_certificate: "{{ lookup('file', pve_group + '/' + inventory_hostname + '.pem') }}"
-pve_cluster_enabled: no
-pve_groups:
-  - name: administrators
-    comment: Administrators
-  - name: automation
-    comment: Automation Users
-  - name: developers
-    comment: Developer Users
-pve_users:
-  - name: packer@pve
-    email: packer@automation.local
-    password: "packer"
-    firstname: Packer
-    lastname: Automation User
-    comment: "This is the user for all packer automation scripts"
-    groups: [ "automation" ]
-  - name: terraform@pve
-    email: terraform@automation.local
-    password: "{{ terraform_user_password }}"
-    firstname: Terraform
-    lastname: Automation User
-    comment: "This is the user for all terraform automation scripts"
-    groups: [ "automation" ]
-pve_acls:
-  - path: /
-    roles: [ "Administrator" ]
-    groups: [ "administrators" ]
-  - path: /
-    roles: [ "Monitoring" ]
-    groups: [ "developers" ]
-  - path: /
-    roles: [ "Terraform" ]
-    groups: [ "automation" ]
-  - path: /
-    roles: [ "Packer" ]
-    groups: [ "automation" ]
-pve_roles:
-  - name: Monitoring
-    privileges:
-      - "Sys.Modify"
-      - "Sys.Audit"
-      - "Datastore.Audit"
-      - "VM.Monitor"
-      - "VM.Audit"
-  - name: Terraform
-    privileges:
-      - "VM.Allocate"
-      - "VM.Clone"
-      - "VM.Config.CDROM"
-      - "VM.Config.CPU"
-      - "VM.Config.Cloudinit"
-      - "VM.Config.Disk"
-      - "VM.Config.HWType"
-      - "VM.Config.Memory"
-      - "VM.Config.Network"
-      - "VM.Config.Options"
-      - "VM.Monitor"
-      - "VM.Audit"
-      - "VM.PowerMgmt"
-      - "Datastore.AllocateSpace"
-      - "Datastore.Audit"
-  - name: Packer
-    privileges:
-      - VM.Allocate
-      - VM.Config.Disk
-      - VM.Config.CPU
-      - VM.Config.Memory
-      - Datastore.AllocateSpace
-      - Sys.Modify
-      - VM.Config.Options
-      - VM.Audit
-      - VM.Console
-      - VM.Config.CDROM
-      - VM.Config.Network
-      - VM.PowerMgmt
-      - VM.Config.HWType
-      - VM.Monitor
-# pve_storages:
-#   - name: localdir
-#     type: dir
-#     content: [ "images", "iso", "backup" ]
-#     path: /plop
-#     maxfiles: 4
-# pve_ssh_port: 22
+mango_hostname: mango
+mango_fqdn: mango.localdomain
+mango_timezone: Europe/Berlin
 
-# interfaces_template: "interfaces-{{ pve_group }}.j2"
+mango_lan_address: 192.168.8.56
+mango_lan_prefix: 21
+mango_lan_gateway: 192.168.8.1
+mango_bridge: vmbr0
+mango_bridge_port: enp5s0
+mango_unused_interfaces:
+  - enp9s0
+  - wlp3s0
+
+mango_nested_virtualization: true
+
+mango_base_packages:
+  - curl
+  - git
+  - htop
+  - jq
+  - nano
+  - smartmontools
+
+# RBAC is intentionally not applied yet. The live node currently has only
+# root@pam. Stack-specific users, tokens, pools, and ACLs will be added through
+# a separately reviewed bootstrap play after the access model is finalized.
+mango_manage_rbac: false

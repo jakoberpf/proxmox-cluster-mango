@@ -1,0 +1,28 @@
+---
+# Allocation registry only. Credentials and application deployment belong to
+# the consuming stack and its secret store.
+consumers:
+  - id: terraform-pihole
+    owner: ../stacks/pihole
+    bucket: terraform-state-pihole
+    purpose: Terraform state and native lock files
+    versioning: required
+    external_copy: required
+  - id: gitlab-runner-cache
+    owner: unassigned
+    bucket: gitlab-runner-cache
+    purpose: Disposable GitLab Runner cache
+    versioning: false
+    external_copy: false
+  - id: gitlab-backups
+    owner: unassigned
+    bucket: gitlab-backups
+    purpose: GitLab application backups
+    versioning: required
+    external_copy: required
+
+naming_policy:
+  terraform_state: terraform-state-<stack>
+  application_data: app-<stack>-<purpose>
+  cache: cache-<stack>-<purpose>
+  backup: backup-<stack>-<purpose>

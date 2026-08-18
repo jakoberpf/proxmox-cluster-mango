@@ -1,0 +1,33 @@
+---
+# Enable or disable AMD RX 6600 XT VFIO passthrough on the Proxmox host.
+#
+#   Enable (GPU hidden from host, available for explicit VM assignment):
+#     ansible-playbook plays/gpu_passthrough.yml -e gpu_passthrough_state=enabled
+#
+#   Disable (host drives the physical monitor, e.g. for relocation):
+#     ansible-playbook plays/gpu_passthrough.yml -e gpu_passthrough_state=disabled
+#
+# Changes are persistent and require a reboot. Preview first with --check --diff.
+# Add -e gpu_passthrough_reboot=true to reboot automatically (stops all workloads!).
+- name: Manage GPU passthrough (VFIO)
+  hosts: proxmox_nodes
+  become: true
+
+  pre_tasks:
+    - name: Require explicit confirmation outside check mode
+      ansible.builtin.assert:
+        that:
+          - >-
+            ansible_check_mode or
+            (gpu_passthrough_confirm | default('')) in
+            ['mango-gpu-config', 'mango-gpu-config-and-reboot']
+          - >-
+            not (gpu_passthrough_reboot | default(false) | bool) or
+            (gpu_passthrough_confirm | default('')) == 'mango-gpu-config-and-reboot'
+        fail_msg: >-
+          Preview with --check --diff. Apply with
+          -e gpu_passthrough_confirm=mango-gpu-config; an approved reboot also
+          requires mango-gpu-config-and-reboot.
+
+  roles:
+    - role: gpu_passthrough

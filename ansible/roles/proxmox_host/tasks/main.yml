@@ -1,0 +1,102 @@
+---
+- name: Verify the target node identity
+  ansible.builtin.assert:
+    that:
+      - inventory_hostname == mango_hostname
+      - ansible_facts.hostname == mango_hostname
+      - ansible_facts.virtualization_role == 'host'
+    fail_msg: >-
+      Refusing to configure {{ inventory_hostname }} because it does not match
+      the expected physical Proxmox host {{ mango_hostname }}.
+
+- name: Configure the node hostname
+  ansible.builtin.hostname:
+    name: "{{ mango_hostname }}"
+
+- name: Configure the host timezone
+  ansible.builtin.file:
+    src: "/usr/share/zoneinfo/{{ mango_timezone }}"
+    dest: /etc/localtime
+    state: link
+    force: true
+
+- name: Configure the timezone name
+  ansible.builtin.copy:
+    content: "{{ mango_timezone }}\n"
+    dest: /etc/timezone
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Configure host name resolution
+  when: mango_manage_hosts_file | bool
+  ansible.builtin.template:
+    src: hosts.j2
+    dest: /etc/hosts
+    owner: root
+    group: root
+    mode: "0644"
+    backup: true
+
+- name: Configure the Debian and Proxmox repositories
+  when: mango_manage_apt_sources | bool
+  ansible.builtin.template:
+    src: sources.list.j2
+    dest: /etc/apt/sources.list
+    owner: root
+    group: root
+    mode: "0644"
+    backup: true
+
+- name: Configure the NetBird repository
+  when: mango_manage_apt_sources | bool
+  ansible.builtin.template:
+    src: netbird.list.j2
+    dest: /etc/apt/sources.list.d/netbird.list
+    owner: root
+    group: root
+    mode: "0644"
+    backup: true
+
+- name: Keep the inactive enterprise repository absent
+  when: mango_manage_apt_sources | bool
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/pve-enterprise.list
+    state: absent
+
+- name: Ensure baseline administration packages are installed
+  when: mango_manage_base_packages | bool
+  ansible.builtin.apt:
+    name: "{{ mango_base_packages }}"
+    state: present
+    update_cache: false
+
+- name: Keep time synchronization active
+  ansible.builtin.service:
+    name: chrony
+    state: started
+    enabled: true
+
+# Never unload kvm_amd on a host with running guests.
+- name: Configure nested AMD virtualization for the next module load
+  when:
+    - mango_manage_nested_virtualization | bool
+    - mango_nested_virtualization | bool
+  ansible.builtin.copy:
+    content: "options kvm-amd nested=1\n"
+    dest: /etc/modprobe.d/kvm-amd.conf
+    owner: root
+    group: root
+    mode: "0644"
+
+# Applying or reloading networking is a separate, explicitly reviewed maintenance operation.
+- name: Validate and configure the persistent host network
+  when: mango_manage_network_config | bool
+  ansible.builtin.template:
+    src: interfaces.j2
+    dest: /etc/network/interfaces
+    owner: root
+    group: root
+    mode: "0644"
+    backup: true
+    validate: /usr/sbin/ifquery -a -i %s

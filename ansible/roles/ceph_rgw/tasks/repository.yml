@@ -1,0 +1,22 @@
+---
+- name: Configure the matching Proxmox Ceph Reef repository
+  ansible.builtin.template:
+    src: ceph.list.j2
+    dest: /etc/apt/sources.list.d/ceph.list
+    owner: root
+    group: root
+    mode: "0644"
+    backup: true
+
+- name: Refresh APT metadata after enabling the Reef repository
+  when: not ansible_check_mode
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 0
+
+- name: Explain repository check-mode behavior
+  when: ansible_check_mode
+  ansible.builtin.debug:
+    msg: >-
+      Check mode only previews ceph.list. Apply the repository phase before
+      previewing or applying the package phase.

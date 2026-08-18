@@ -1,0 +1,3 @@
+---
+wakeonlan_interface: enp5s0
+wakeonlan_mac: "40:b0:76:d7:f1:2a"

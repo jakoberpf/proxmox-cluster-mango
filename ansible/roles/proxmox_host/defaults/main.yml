@@ -1,0 +1,6 @@
+---
+mango_manage_apt_sources: true
+mango_manage_network_config: true
+mango_manage_hosts_file: true
+mango_manage_base_packages: true
+mango_manage_nested_virtualization: true

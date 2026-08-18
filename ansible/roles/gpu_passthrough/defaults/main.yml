@@ -1,0 +1,60 @@
+---
+# GPU passthrough (VFIO) host-side configuration for the AMD RX 6600 XT.
+#
+# When enabled: the GPU is bound to vfio-pci and hidden from the Proxmox host
+#   (no local console on the physical monitor), and can be assigned to a VM.
+# When disabled: the host loads amdgpu and drives the physical monitor
+#   (useful for relocation / troubleshooting). Do NOT start the passthrough
+#   VMs while disabled.
+#
+# Toggle with:  -e gpu_passthrough_state=enabled   (default)
+#               -e gpu_passthrough_state=disabled
+#
+# Changes are PERSISTENT and require a reboot to take effect. Set
+# gpu_passthrough_reboot=true to let the role reboot automatically.
+# Live state as of 2026-08-16: host drivers own the GPU and no VM has hostpci.
+gpu_passthrough_state: disabled
+gpu_passthrough_reboot: false
+
+# PCI vendor:device IDs bound to vfio-pci (RX 6600 XT VGA + HDMI audio +
+# the Navi 10 up/downstream switch ports).
+gpu_passthrough_vfio_ids:
+  - "1002:1479"
+  - "1002:1478"
+  - "1002:73ff"
+  - "1002:ab28"
+
+# Host driver modules that must be blacklisted while passthrough is enabled.
+gpu_passthrough_blacklist_modules:
+  - amdgpu
+  - radeon
+  - snd_hda_intel
+
+# Kernel cmdline params, split so the framebuffer-off group can be toggled.
+# The order below matches the current on-disk cmdline so that applying
+# `state=enabled` is idempotent (no spurious update-grub). When `disabled`,
+# the *_fb_params are dropped, leaving only the IOMMU base params.
+#
+# On-disk (enabled) order:
+#   quiet amd_iommu=on iommu=pt video=vesafb:off video=efifb:off \
+#   initcall_blacklist=sysfb_init pcie_acs_override=downstream,multifunction \
+#   nofb nomodeset
+gpu_passthrough_grub_pre_params:
+  - "quiet"
+  - "amd_iommu=on"
+  - "iommu=pt"
+
+# Framebuffer-off params present only when passthrough is ENABLED.
+gpu_passthrough_grub_fb_params:
+  - "video=vesafb:off"
+  - "video=efifb:off"
+  - "initcall_blacklist=sysfb_init"
+
+# IOMMU ACS override - stays in BOTH states, sits after the fb params on disk.
+gpu_passthrough_grub_post_params:
+  - "pcie_acs_override=downstream,multifunction"
+
+# Additional framebuffer-off params (also only when ENABLED), trailing on disk.
+gpu_passthrough_grub_fb_trailing_params:
+  - "nofb"
+  - "nomodeset"

@@ -1,0 +1,56 @@
+---
+- name: List available RGW versions
+  ansible.builtin.command: apt-cache madison radosgw
+  register: mango_rgw_available_versions
+  changed_when: false
+  check_mode: false
+
+- name: Require the exact installed Ceph build to be available
+  ansible.builtin.assert:
+    that:
+      - mango_rgw_ceph_version in mango_rgw_available_versions.stdout
+    fail_msg: >-
+      radosgw={{ mango_rgw_ceph_version }} is unavailable. Do not install a
+      different Ceph version as part of the RGW rollout.
+
+- name: Simulate the pinned RGW installation
+  ansible.builtin.command:
+    argv:
+      - apt-get
+      - --simulate
+      - install
+      - "radosgw={{ mango_rgw_ceph_version }}"
+  register: mango_rgw_install_simulation
+  changed_when: false
+  check_mode: false
+
+- name: Refuse implicit package upgrades, removals, or downgrades
+  ansible.builtin.assert:
+    that:
+      - "'Remv ' not in mango_rgw_install_simulation.stdout"
+      - "'DOWNGRADED' not in mango_rgw_install_simulation.stdout"
+      - mango_rgw_install_simulation.stdout is search('0 upgraded, [0-9]+ newly installed, 0 to remove')
+    fail_msg: "The simulated RGW install would alter existing packages; review it separately."
+
+- name: Install the pinned RGW package
+  ansible.builtin.apt:
+    name: "radosgw={{ mango_rgw_ceph_version }}"
+    state: present
+    update_cache: false
+    allow_downgrade: false
+
+- name: Verify the installed RGW version
+  ansible.builtin.command:
+    argv:
+      - dpkg-query
+      - -W
+      - -f=${Version}
+      - radosgw
+  register: mango_rgw_installed_version
+  changed_when: false
+  check_mode: false
+
+- name: Enforce the installed RGW version
+  ansible.builtin.assert:
+    that:
+      - ansible_check_mode or mango_rgw_installed_version.stdout == mango_rgw_ceph_version

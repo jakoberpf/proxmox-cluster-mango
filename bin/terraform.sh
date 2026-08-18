@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
-GIT_ROOT=$(git rev-parse --show-toplevel)
-cd $GIT_ROOT
+set -euo pipefail
 
-# Run terraform apply
-cd terraform
-terraform init -upgrade
-terraform apply -var-file="variables.tfvars"
-cd $GIT_ROOT
+echo "Terraform workload deployment is intentionally disabled in the mango node repository." >&2
+echo "Use a stack repository with a scoped Proxmox API token and resource pool." >&2
+exit 2

@@ -1,0 +1,121 @@
+---
+- name: Audit the mango Proxmox node
+  hosts: proxmox_nodes
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Verify node identity
+      ansible.builtin.assert:
+        that:
+          - inventory_hostname == mango_hostname
+          - ansible_facts.hostname == mango_hostname
+          - ansible_facts.virtualization_role == 'host'
+
+    - name: Read the Proxmox version
+      ansible.builtin.command: pveversion
+      register: mango_audit_pveversion
+      changed_when: false
+      check_mode: false
+
+    - name: Check for failed systemd units
+      ansible.builtin.command: systemctl --failed --plain --no-legend
+      register: mango_audit_failed_units
+      changed_when: false
+      check_mode: false
+
+    - name: Read the configured LAN addresses
+      ansible.builtin.command: ip -j -4 address show dev {{ mango_bridge }}
+      register: mango_audit_addresses
+      changed_when: false
+      check_mode: false
+
+    - name: Read ZFS pool health
+      ansible.builtin.command: zpool status -x
+      register: mango_audit_zpool_health
+      changed_when: false
+      failed_when: false
+      check_mode: false
+
+    - name: Read the Proxmox firewall state
+      ansible.builtin.command: pve-firewall status
+      register: mango_audit_firewall
+      changed_when: false
+      failed_when: false
+      check_mode: false
+
+    - name: Count pending package upgrades
+      ansible.builtin.shell: >-
+        set -o pipefail && apt list --upgradable 2>/dev/null | tail -n +2 | wc -l
+      args:
+        executable: /bin/bash
+      register: mango_audit_upgrade_count
+      changed_when: false
+      check_mode: false
+
+    - name: Read Ceph status
+      ansible.builtin.command: ceph status --format json
+      register: mango_audit_ceph_status
+      changed_when: false
+      check_mode: false
+
+    - name: Read Ceph public network
+      ansible.builtin.command: ceph-conf --name client.admin --lookup public_network
+      register: mango_audit_ceph_public_network
+      changed_when: false
+      check_mode: false
+
+    - name: Read Ceph cluster network
+      ansible.builtin.command: ceph-conf --name osd.0 --lookup cluster_network
+      register: mango_audit_ceph_cluster_network
+      changed_when: false
+      check_mode: false
+
+    - name: Count PGs that are not active and clean
+      ansible.builtin.shell: >-
+        set -o pipefail && ceph pg dump pgs_brief --format json 2>/dev/null |
+        jq '[.pg_stats[] | select((.state | startswith("active+clean")) | not)] | length'
+      args:
+        executable: /bin/bash
+      register: mango_audit_bad_pgs
+      changed_when: false
+      check_mode: false
+
+    - name: Read the CephFS mount source
+      ansible.builtin.command: findmnt --noheadings --raw --output SOURCE /mnt/pve/{{ mango_ceph_filesystem }}
+      register: mango_audit_cephfs_source
+      changed_when: false
+      check_mode: false
+
+    - name: Parse Ceph status
+      ansible.builtin.set_fact:
+        mango_audit_ceph: "{{ mango_audit_ceph_status.stdout | from_json }}"
+
+    - name: Enforce production drift gates
+      ansible.builtin.assert:
+        that:
+          - mango_audit_failed_units.stdout | trim == ''
+          - >-
+            mango_lan_address in
+            ((mango_audit_addresses.stdout | from_json | first).addr_info |
+             selectattr('family', 'equalto', 'inet') | map(attribute='local') | list)
+          - mango_audit_ceph.fsid == mango_ceph_fsid
+          - mango_audit_ceph.quorum_names == [mango_ceph_monitor_name]
+          - mango_audit_ceph.osdmap.num_osds | int == mango_ceph_osd_count
+          - mango_audit_ceph.osdmap.num_up_osds | int == mango_ceph_osd_count
+          - mango_audit_ceph.osdmap.num_in_osds | int == mango_ceph_osd_count
+          - mango_audit_bad_pgs.stdout | int == 0
+          - mango_audit_ceph_public_network.stdout | trim == mango_ceph_public_network
+          - mango_audit_ceph_cluster_network.stdout | trim == mango_ceph_cluster_network
+          - mango_audit_cephfs_source.stdout | trim == mango_ceph_monitor_address + ':/'
+
+    - name: Report audited node state
+      ansible.builtin.debug:
+        msg:
+          pve_version: "{{ mango_audit_pveversion.stdout }}"
+          zfs_health: "{{ mango_audit_zpool_health.stdout_lines }}"
+          firewall: "{{ mango_audit_firewall.stdout }}"
+          pending_upgrades: "{{ mango_audit_upgrade_count.stdout | int }}"
+          ceph_health: "{{ mango_audit_ceph.health.status }}"
+          ceph_osds: "{{ mango_audit_ceph.osdmap.num_up_osds }}/{{ mango_audit_ceph.osdmap.num_osds }} up"
+          cephfs_source: "{{ mango_audit_cephfs_source.stdout }}"

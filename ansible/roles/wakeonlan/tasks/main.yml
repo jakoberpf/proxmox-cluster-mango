@@ -1,14 +1,51 @@
-- name: Create wakeonlan systemd service file
-  template:
-    src: templates/wol.service.j2
-    dest: /lib/systemd/system/wol.service
+---
+- name: Validate Wake-on-LAN inputs
+  ansible.builtin.assert:
+    that:
+      - wakeonlan_interface is match('^[a-zA-Z0-9_.:-]+$')
+      - wakeonlan_mac is match('^(?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$')
 
-- name: Start wol.service
-  systemd:
+- name: Check whether the Wake-on-LAN service already exists
+  ansible.builtin.stat:
+    path: /etc/systemd/system/wol.service
+  register: wakeonlan_existing_service
+
+- name: Install Wake-on-LAN systemd service
+  ansible.builtin.template:
+    src: wol.service.j2
+    dest: /etc/systemd/system/wol.service
+    owner: root
+    group: root
+    mode: "0644"
+  register: wakeonlan_service
+
+- name: Enable and start Wake-on-LAN service
+  when: not ansible_check_mode or wakeonlan_existing_service.stat.exists
+  ansible.builtin.systemd:
     name: wol.service
+    daemon_reload: "{{ wakeonlan_service.changed }}"
+    enabled: true
     state: started
 
-- name: reload service wol.serviced, in all cases
-  systemd:
-    name: wol.service
-    state: reloaded
+- name: Read Proxmox node configuration
+  ansible.builtin.command:
+    argv:
+      - pvesh
+      - get
+      - "/nodes/{{ inventory_hostname }}/config"
+      - --output-format
+      - json
+  register: wakeonlan_node_config
+  changed_when: false
+  check_mode: false
+
+- name: Configure Proxmox Wake-on-LAN MAC address
+  when: (wakeonlan_node_config.stdout | from_json).wakeonlan | default('') != wakeonlan_mac
+  ansible.builtin.command:
+    argv:
+      - pvenode
+      - config
+      - set
+      - --wakeonlan
+      - "{{ wakeonlan_mac }}"
+  changed_when: true

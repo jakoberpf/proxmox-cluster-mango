@@ -1,30 +1,13 @@
-#!/usr/local/bin/bash
-echo "Running script with bash version: $BASH_VERSION"
-GIT_ROOT=$(git rev-parse --show-toplevel)
+#!/usr/bin/env bash
+set -euo pipefail
 
-# https://www.myworkroom.de/p-hb:wakeonlan.proxmox
-# https://www.cyberciti.biz/faq/apple-os-x-wake-on-lancommand-line-utility/
+mango_mac="40:b0:76:d7:f1:2a"
 
-unameOut="$(uname -s)"
-case "${unameOut}" in
-    Linux*)     machine=Linux;;
-    Darwin*)    machine=Mac;;
-    *)          machine="UNKNOWN:${unameOut}"
-esac
-echo "Running on ${machine}"
-
-case ${machine} in
-  Linux)
-    apt-get install etherwake
-    etherwake 40:b0:76:d7:f1:2a
-    ;;
-
-  Mac)
-    brew install wakeonlan
-    wakeonlan 40:b0:76:d7:f1:2a
-    ;;
-
-  *)
-    echo "UNKNOWN:${unameOut}"
-    ;;
-esac
+if command -v wakeonlan >/dev/null 2>&1; then
+  wakeonlan "$mango_mac"
+elif command -v etherwake >/dev/null 2>&1; then
+  etherwake "$mango_mac"
+else
+  echo "Install wakeonlan or etherwake before using this helper." >&2
+  exit 2
+fi

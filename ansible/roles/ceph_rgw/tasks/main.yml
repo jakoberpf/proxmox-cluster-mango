@@ -1,0 +1,19 @@
+---
+- name: Run RGW preflight audit
+  ansible.builtin.include_tasks: audit.yml
+
+- name: Prepare the Ceph Reef repository
+  when: mango_rgw_phase == 'repository'
+  ansible.builtin.include_tasks: repository.yml
+
+- name: Install the pinned RGW package
+  when: mango_rgw_phase == 'package'
+  ansible.builtin.include_tasks: package.yml
+
+- name: Prepare RGW pools
+  when: mango_rgw_phase == 'pools'
+  ansible.builtin.include_tasks: pools.yml
+
+- name: Configure and start RGW
+  when: mango_rgw_phase == 'daemon'
+  ansible.builtin.include_tasks: daemon.yml

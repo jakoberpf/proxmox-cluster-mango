@@ -1,0 +1,22 @@
+# network interface settings; migrated to 192.168.8.0/21
+#
+# vmbr0 remains the guest-facing bridge.
+
+auto lo
+iface lo inet loopback
+
+iface {{ mango_bridge_port }} inet manual
+
+{% for interface in mango_unused_interfaces %}
+iface {{ interface }} inet manual
+
+{% endfor %}
+auto {{ mango_bridge }}
+iface {{ mango_bridge }} inet static
+	address {{ mango_lan_address }}/{{ mango_lan_prefix }}
+	gateway {{ mango_lan_gateway }}
+	bridge-ports {{ mango_bridge_port }}
+	bridge-stp off
+	bridge-fd 0
+
+source /etc/network/interfaces.d/*

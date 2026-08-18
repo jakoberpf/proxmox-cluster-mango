@@ -1,43 +1,8 @@
 ---
-- name: Preprare the development machine with basic settings, packages and networking
-  hosts: development
+- name: Configure the mango Proxmox node
+  hosts: proxmox_nodes
+  become: true
+  gather_facts: true
 
-  tasks:
-    ### Proxmox repository # https://github.com/chriswayg/ansible-proxmox/blob/master/tasks/main.yml
-    - name: Remove Proxmox Enterprise repository
-      apt_repository:
-        repo: 'deb https://enterprise.proxmox.com/debian bookworm pve-enterprise'
-        state: absent
-
-    - name: Use Proxmox free repository
-      apt_repository:
-        repo: 'deb http://download.proxmox.com/debian/pve bookworm pve-no-subscription'
-        state: present
-
-    - name: Install basic packages
-      become: yes
-      apt:
-        update_cache: yes
-        pkg:
-          - git
-          - nano
-          - htop
-          - curl
-          - timeshift
-          - python3-jmespath
-        state: present
-      register: apt_action
-      retries: 100
-      until: apt_action is success or ('Failed to lock apt for exclusive operation' not in apt_action.msg and '/var/lib/dpkg/lock' not in apt_action.msg)
-
-    - name: Enable nested virtualization # https://pve.proxmox.com/wiki/Nested_Virtualization
-      shell: |
-        echo "options kvm-amd nested=1" > /etc/modprobe.d/kvm-amd.conf
-        modprobe -r kvm_amd
-        modprobe kvm_amd
-
-    - name: Install packer # https://developer.hashicorp.com/packer/tutorials/docker-get-started/get-started-install-cli
-      shell: |
-        curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
-        sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-        sudo apt-get update && sudo apt-get install packer
+  roles:
+    - role: proxmox_host

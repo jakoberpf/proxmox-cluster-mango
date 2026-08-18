@@ -1,0 +1,23 @@
+---
+# NOTE: handlers run in the order they are DEFINED here (not notify order).
+# Keep "proxmox-boot refresh" LAST so it copies the freshly generated grub.cfg
+# and initramfs to the ESPs after both have been rebuilt.
+
+- name: update grub
+  ansible.builtin.command: update-grub
+  listen: update grub
+  notify: proxmox-boot refresh
+
+- name: update initramfs
+  ansible.builtin.command: update-initramfs -u -k all
+  listen: update initramfs
+  notify: proxmox-boot refresh
+
+# On hosts booted via proxmox-boot-tool (systemd-boot or grub on the ESPs, e.g.
+# ZFS-on-root), update-grub/update-initramfs alone do NOT update the actual boot
+# configs on the EFI System Partitions. `proxmox-boot-tool refresh` syncs them.
+# Guarded so it is a no-op on hosts that do not use proxmox-boot-tool.
+- name: proxmox-boot refresh
+  ansible.builtin.command: proxmox-boot-tool refresh
+  listen: proxmox-boot refresh
+  when: gpu_passthrough_proxmox_boot | bool

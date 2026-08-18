@@ -1,16 +1,3 @@
 ---
-
-- name: Include basic initialisation
-  include: base.yaml
-
-# - name: Include timeshift setup
-#   include: timeshift.yaml
-
-# - name: Include basic initialisation
-#   include: proxmox.yml
-
-# - name: Include ceph dashboard setup
-#   include: ceph.dashboard.yaml
-
-# - name: Include ceph radosgw setup
-#   include: ceph.radoswg.yaml
+- name: Configure the mango Proxmox host
+  ansible.builtin.import_playbook: base.yaml

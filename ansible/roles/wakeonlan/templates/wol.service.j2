@@ -1,9 +1,11 @@
 [Unit]
 Description=Configure Wake-up on LAN
+After=network.target
 
 [Service]
 Type=oneshot
-ExecStart=/sbin/ethtool -s {{ eth_nic }} wol g
+ExecStart=/usr/sbin/ethtool -s {{ wakeonlan_interface }} wol g
+RemainAfterExit=yes
 
 [Install]
-WantedBy=basic.target
+WantedBy=multi-user.target

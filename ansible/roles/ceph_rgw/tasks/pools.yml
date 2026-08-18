@@ -1,0 +1,179 @@
+---
+- name: Preview RGW pool changes in check mode
+  when: ansible_check_mode
+  ansible.builtin.debug:
+    msg:
+      export_to: "{{ mango_rgw_recovery_dir }}"
+      merge_existing_rgw_pools_to_pgs: "{{ mango_rgw_pg_num }}"
+      create_replicated_pools: "{{ mango_rgw_replicated_pools }}"
+      create_ec_pool: "{{ mango_rgw_data_pool }}"
+      ec_profile: "{{ mango_rgw_ec_profile }} (4+2, failure-domain=osd)"
+
+- name: Create the private RGW recovery directory
+  when: not ansible_check_mode
+  ansible.builtin.file:
+    path: "{{ mango_rgw_recovery_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Export existing RGW metadata pools
+  when: not ansible_check_mode
+  ansible.builtin.command:
+    argv:
+      - rados
+      - --pool
+      - "{{ item.key }}"
+      - export
+      - "{{ mango_rgw_recovery_dir }}/{{ item.value }}"
+    creates: "{{ mango_rgw_recovery_dir }}/{{ item.value }}"
+  loop: "{{ mango_rgw_recovery_exports | dict2items }}"
+  no_log: true
+
+- name: Merge existing RGW pool PGs one pool at a time
+  when: not ansible_check_mode
+  ansible.builtin.include_tasks: merge_pool.yml
+  loop: "{{ mango_rgw_existing_pools }}"
+  loop_control:
+    loop_var: mango_rgw_merge_pool
+
+- name: List erasure-code profiles
+  ansible.builtin.command: ceph osd erasure-code-profile ls
+  register: mango_rgw_ec_profiles
+  changed_when: false
+  check_mode: false
+
+- name: Create the dedicated RGW 4+2 erasure-code profile
+  when:
+    - not ansible_check_mode
+    - mango_rgw_ec_profile not in mango_rgw_ec_profiles.stdout_lines
+  ansible.builtin.command:
+    argv:
+      - ceph
+      - osd
+      - erasure-code-profile
+      - set
+      - "{{ mango_rgw_ec_profile }}"
+      - k=4
+      - m=2
+      - crush-failure-domain=osd
+  changed_when: true
+
+- name: Create missing replicated RGW pools
+  when:
+    - not ansible_check_mode
+    - item not in mango_rgw_pool_names
+  ansible.builtin.command:
+    argv:
+      - ceph
+      - osd
+      - pool
+      - create
+      - "{{ item }}"
+      - "{{ mango_rgw_pg_num | string }}"
+      - "{{ mango_rgw_pg_num | string }}"
+      - replicated
+      - replicated_rule
+  loop: "{{ mango_rgw_replicated_pools }}"
+  changed_when: true
+
+- name: Create the missing EC RGW data pool
+  when:
+    - not ansible_check_mode
+    - mango_rgw_data_pool not in mango_rgw_pool_names
+  ansible.builtin.command:
+    argv:
+      - ceph
+      - osd
+      - pool
+      - create
+      - "{{ mango_rgw_data_pool }}"
+      - "{{ mango_rgw_pg_num | string }}"
+      - "{{ mango_rgw_pg_num | string }}"
+      - erasure
+      - "{{ mango_rgw_ec_profile }}"
+  changed_when: true
+
+- name: Read RGW pools after creation
+  when: not ansible_check_mode
+  ansible.builtin.command: ceph osd pool ls detail --format json
+  register: mango_rgw_created_pool_details_command
+  changed_when: false
+
+- name: Configure replicated RGW pool durability and PG policy
+  when: not ansible_check_mode
+  ansible.builtin.command: >-
+    ceph osd pool set {{ item.0 }} {{ item.1.name }} {{ item.1.value }}
+  loop: >-
+    {{ mango_rgw_replicated_pools |
+       product([{'name': 'size', 'value': 3},
+                {'name': 'min_size', 'value': 2},
+                {'name': 'pg_num', 'value': mango_rgw_pg_num},
+                {'name': 'pg_autoscale_mode', 'value': 'off'}]) | list }}
+  changed_when: true
+
+- name: Configure EC RGW pool durability and PG policy
+  when: not ansible_check_mode
+  ansible.builtin.command: >-
+    ceph osd pool set {{ mango_rgw_data_pool }} {{ item.name }} {{ item.value }}
+  loop:
+    - name: min_size
+      value: 5
+    - name: pg_autoscale_mode
+      value: "off"
+  changed_when: true
+
+- name: Enable the RGW application tag on bucket pools
+  when: not ansible_check_mode
+  ansible.builtin.command: >-
+    ceph osd pool application enable {{ item }} rgw
+  loop: "{{ mango_rgw_replicated_pools + [mango_rgw_data_pool] }}"
+  changed_when: true
+
+- name: Wait for all RGW pools to finish PG merging
+  when: not ansible_check_mode
+  ansible.builtin.shell: >-
+    set -o pipefail && ceph osd pool ls detail --format json |
+    jq -e '[.[] | select(.pool_name | test("rgw")) |
+    select(.pg_num != {{ mango_rgw_pg_num }})] | length == 0'
+  args:
+    executable: /bin/bash
+  register: mango_rgw_pools_merged
+  changed_when: false
+  retries: 120
+  delay: 5
+  until: mango_rgw_pools_merged.rc == 0
+
+- name: Wait for all PGs to return active and clean
+  when: not ansible_check_mode
+  ansible.builtin.shell: >-
+    set -o pipefail && ceph pg dump pgs_brief --format json 2>/dev/null |
+    jq -e '[.pg_stats[] | select((.state | startswith("active+clean")) | not)] | length == 0'
+  args:
+    executable: /bin/bash
+  register: mango_rgw_pools_clean
+  changed_when: false
+  retries: 120
+  delay: 5
+  until: mango_rgw_pools_clean.rc == 0
+
+- name: Read final RGW pool state
+  when: not ansible_check_mode
+  ansible.builtin.command: ceph osd pool ls detail --format json
+  register: mango_rgw_final_pool_details_command
+  changed_when: false
+
+- name: Verify final RGW pool topology
+  when: not ansible_check_mode
+  vars:
+    mango_rgw_final_pool_details: "{{ mango_rgw_final_pool_details_command.stdout | from_json }}"
+    mango_rgw_final_pool_names: "{{ mango_rgw_final_pool_details | map(attribute='pool_name') | list }}"
+  ansible.builtin.assert:
+    that:
+      - (mango_rgw_existing_pools + mango_rgw_replicated_pools + [mango_rgw_data_pool]) |
+        difference(mango_rgw_final_pool_names) | length == 0
+      - >-
+        mango_rgw_final_pool_details |
+        selectattr('pool_name', 'in', mango_rgw_existing_pools + mango_rgw_replicated_pools + [mango_rgw_data_pool]) |
+        rejectattr('pg_num', 'equalto', mango_rgw_pg_num) | list | length == 0

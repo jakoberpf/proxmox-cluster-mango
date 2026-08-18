@@ -1,0 +1,20 @@
+---
+- name: Prepare Ceph RGW on mango
+  hosts: proxmox_nodes
+  become: true
+  gather_facts: true
+
+  pre_tasks:
+    - name: Validate the requested RGW phase
+      ansible.builtin.assert:
+        that:
+          - mango_rgw_phase in ['audit', 'repository', 'package', 'pools', 'daemon']
+          - >-
+            ansible_check_mode or mango_rgw_phase == 'audit' or
+            (mango_rgw_confirm | default('')) == 'mango-rgw-' + mango_rgw_phase
+        fail_msg: >-
+          Preview with --check --diff. Applying a phase requires
+          -e mango_rgw_confirm=mango-rgw-{{ mango_rgw_phase }}.
+
+  roles:
+    - role: ceph_rgw

@@ -1,0 +1,271 @@
+---
+- name: Verify the pinned RGW package is installed
+  ansible.builtin.command:
+    argv:
+      - dpkg-query
+      - -W
+      - -f=${Version}
+      - radosgw
+  register: mango_rgw_daemon_package_version
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Check for an existing Let's Encrypt certificate
+  ansible.builtin.stat:
+    path: "{{ mango_rgw_letsencrypt_dir }}/fullchain.pem"
+  register: mango_rgw_letsencrypt_cert
+  check_mode: false
+
+- name: Check for an assembled RGW PEM
+  ansible.builtin.stat:
+    path: "{{ mango_rgw_tls_pem_path }}"
+  register: mango_rgw_pem
+  check_mode: false
+
+- name: Require package, DNS, and certificate inputs for daemon activation
+  ansible.builtin.assert:
+    that:
+      - ansible_check_mode or mango_rgw_daemon_package_version.stdout == mango_rgw_ceph_version
+      - ansible_check_mode or mango_rgw_dns_command.rc == 0
+      - ansible_check_mode or mango_rgw_listen_address in mango_rgw_dns_command.stdout
+      - >-
+        ansible_check_mode or mango_rgw_letsencrypt_cert.stat.exists or
+        mango_rgw_cloudflare_api_token | length > 0
+    fail_msg: >-
+      The daemon phase requires the pinned package, DNS resolving to the LAN
+      address, and either an existing Let's Encrypt certificate or the vaulted
+      Cloudflare API token to issue one.
+
+- name: Preview RGW daemon configuration in check mode
+  when: ansible_check_mode
+  ansible.builtin.debug:
+    msg:
+      service: "{{ mango_rgw_service }}"
+      endpoint: "https://{{ mango_rgw_fqdn }}:{{ mango_rgw_port }}"
+      listen: "{{ mango_rgw_listen_address }}:{{ mango_rgw_port }}"
+      certificate_names:
+        - "{{ mango_rgw_fqdn }}"
+        - "{{ mango_rgw_wildcard_fqdn }}"
+      client: "{{ mango_rgw_client_id }}"
+      zone: "{{ mango_rgw_zone }}"
+      prerequisites:
+        package_installed: "{{ mango_rgw_daemon_package_version.stdout == mango_rgw_ceph_version }}"
+        dns_resolves_to_listener: >-
+          {{ mango_rgw_dns_command.rc == 0 and mango_rgw_listen_address in mango_rgw_dns_command.stdout }}
+        letsencrypt_certificate_present: "{{ mango_rgw_letsencrypt_cert.stat.exists }}"
+        cloudflare_token_present: "{{ mango_rgw_cloudflare_api_token | length > 0 }}"
+
+- name: Install certbot with the Cloudflare DNS plugin
+  ansible.builtin.apt:
+    name:
+      - certbot
+      - python3-certbot-dns-cloudflare
+    state: present
+    update_cache: false
+
+- name: Install the scoped Cloudflare API credentials
+  when: mango_rgw_cloudflare_api_token | length > 0
+  ansible.builtin.copy:
+    content: "dns_cloudflare_api_token = {{ mango_rgw_cloudflare_api_token }}\n"
+    dest: "{{ mango_rgw_cloudflare_credentials_path }}"
+    owner: root
+    group: root
+    mode: "0600"
+  no_log: true
+
+- name: Enable certbot renewal
+  when: not ansible_check_mode
+  ansible.builtin.systemd:
+    name: certbot.timer
+    enabled: true
+    state: started
+
+- name: Check whether the existing certificate covers both names
+  when: mango_rgw_letsencrypt_cert.stat.exists
+  ansible.builtin.command:
+    argv:
+      - openssl
+      - x509
+      - -in
+      - "{{ mango_rgw_letsencrypt_dir }}/fullchain.pem"
+      - -noout
+      - -checkhost
+      - "{{ item }}"
+  loop:
+    - "{{ mango_rgw_fqdn }}"
+    - "test.{{ mango_rgw_fqdn }}"
+  register: mango_rgw_cert_coverage
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Issue the Let's Encrypt certificate through DNS-01
+  when:
+    - not ansible_check_mode
+    - >-
+      (not mango_rgw_letsencrypt_cert.stat.exists) or
+      (((mango_rgw_cert_coverage | default({})).results | default([]))
+      | selectattr('rc', 'ne', 0) | list | length > 0)
+  ansible.builtin.command:
+    argv:
+      - certbot
+      - certonly
+      - --dns-cloudflare
+      - --dns-cloudflare-credentials
+      - "{{ mango_rgw_cloudflare_credentials_path }}"
+      - --domain
+      - "{{ mango_rgw_fqdn }}"
+      - --domain
+      - "{{ mango_rgw_wildcard_fqdn }}"
+      - --keep-until-expiring
+      - --non-interactive
+      - --agree-tos
+      - --email
+      - "{{ mango_rgw_acme_email }}"
+  register: mango_rgw_certbot_issue
+  changed_when: >-
+    ('no action taken' not in mango_rgw_certbot_issue.stdout) and
+    ('no action taken' not in mango_rgw_certbot_issue.stderr)
+
+- name: Install the RGW certificate deploy hook
+  ansible.builtin.template:
+    src: rgw-mango-deploy-hook.sh.j2
+    dest: /etc/letsencrypt/renewal-hooks/deploy/rgw-mango.sh
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Assemble the initial RGW PEM
+  when:
+    - not ansible_check_mode
+    - >-
+      (not mango_rgw_pem.stat.exists) or
+      ((mango_rgw_certbot_issue | default({})).changed | default(false))
+  ansible.builtin.command:
+    argv:
+      - /etc/letsencrypt/renewal-hooks/deploy/rgw-mango.sh
+  changed_when: true
+
+- name: Verify the RGW certificate chain
+  when: not ansible_check_mode
+  ansible.builtin.command:
+    argv:
+      - openssl
+      - verify
+      - -untrusted
+      - "{{ mango_rgw_letsencrypt_dir }}/chain.pem"
+      - "{{ mango_rgw_letsencrypt_dir }}/cert.pem"
+  changed_when: false
+
+- name: Verify the RGW certificate base hostname
+  when: not ansible_check_mode
+  ansible.builtin.command:
+    argv:
+      - openssl
+      - x509
+      - -in
+      - "{{ mango_rgw_tls_pem_path }}"
+      - -noout
+      - -checkhost
+      - "{{ mango_rgw_fqdn }}"
+  changed_when: false
+
+- name: Verify the RGW certificate wildcard hostname
+  when: not ansible_check_mode
+  ansible.builtin.command:
+    argv:
+      - openssl
+      - x509
+      - -in
+      - "{{ mango_rgw_tls_pem_path }}"
+      - -noout
+      - -checkhost
+      - test.s3.mango.cloudsium.de
+  changed_when: false
+
+- name: Verify that the RGW certificate and key match
+  when: not ansible_check_mode
+  ansible.builtin.shell: >-
+    cmp <(openssl x509 -in {{ mango_rgw_tls_pem_path | quote }} -pubkey -noout)
+    <(openssl pkey -in {{ mango_rgw_tls_pem_path | quote }} -pubout)
+  args:
+    executable: /bin/bash
+  changed_when: false
+  no_log: true
+
+- name: Create or retrieve the RGW daemon CephX keyring
+  when: not ansible_check_mode
+  ansible.builtin.command:
+    argv:
+      - ceph
+      - auth
+      - get-or-create
+      - "{{ mango_rgw_client_id }}"
+      - mon
+      - allow rw
+      - mgr
+      - allow rw
+      - osd
+      - allow rwx tag rgw *=*
+      - -o
+      - "{{ mango_rgw_keyring_path }}"
+  no_log: true
+  changed_when: true
+
+- name: Read current RGW central configuration
+  when: not ansible_check_mode
+  ansible.builtin.command:
+    argv:
+      - ceph
+      - config
+      - get
+      - "{{ mango_rgw_client_id }}"
+      - "{{ item.name }}"
+  loop: "{{ mango_rgw_config }}"
+  register: mango_rgw_current_config
+  changed_when: false
+  failed_when: false
+
+- name: Set changed RGW central configuration
+  when:
+    - not ansible_check_mode
+    - item.rc != 0 or (item.stdout | trim) != (item.item.value | trim)
+  ansible.builtin.command:
+    argv:
+      - ceph
+      - config
+      - set
+      - "{{ mango_rgw_client_id }}"
+      - "{{ item.item.name }}"
+      - "{{ item.item.value }}"
+  loop: "{{ mango_rgw_current_config.results }}"
+  changed_when: true
+
+- name: Enable and start the RGW service
+  when: not ansible_check_mode
+  ansible.builtin.systemd:
+    name: "{{ mango_rgw_service }}"
+    enabled: true
+    state: started
+
+- name: Verify the RGW TLS endpoint
+  when: not ansible_check_mode
+  ansible.builtin.uri:
+    url: "https://{{ mango_rgw_fqdn }}:{{ mango_rgw_port }}/"
+    status_code:
+      - 200
+      - 403
+  register: mango_rgw_endpoint_check
+  retries: 12
+  delay: 5
+  until: mango_rgw_endpoint_check.status in [200, 403]
+
+- name: Re-run the clean-PG gate after RGW activation
+  when: not ansible_check_mode
+  ansible.builtin.shell: >-
+    set -o pipefail && ceph pg dump pgs_brief --format json 2>/dev/null |
+    jq -e '[.pg_stats[] | select((.state | startswith("active+clean")) | not)] | length == 0'
+  args:
+    executable: /bin/bash
+  changed_when: false

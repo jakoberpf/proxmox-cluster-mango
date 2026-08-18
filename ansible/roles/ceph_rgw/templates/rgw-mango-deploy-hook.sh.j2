@@ -1,0 +1,14 @@
+#!/bin/bash
+# Managed by Ansible (ceph_rgw role). Assemble the RGW TLS PEM from the
+# renewed Let's Encrypt files and restart the gateway if it is running.
+set -euo pipefail
+
+install -m 0600 -o ceph -g ceph /dev/null "{{ mango_rgw_tls_pem_path }}.tmp"
+cat "{{ mango_rgw_letsencrypt_dir }}/privkey.pem" \
+    "{{ mango_rgw_letsencrypt_dir }}/fullchain.pem" \
+    > "{{ mango_rgw_tls_pem_path }}.tmp"
+mv "{{ mango_rgw_tls_pem_path }}.tmp" "{{ mango_rgw_tls_pem_path }}"
+
+if systemctl is-active --quiet "{{ mango_rgw_service }}"; then
+    systemctl try-reload-or-restart "{{ mango_rgw_service }}"
+fi

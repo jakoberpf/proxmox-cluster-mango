@@ -1,0 +1,164 @@
+---
+- name: Validate gpu_passthrough_state
+  assert:
+    that:
+      - gpu_passthrough_state in ['enabled', 'disabled']
+    fail_msg: "gpu_passthrough_state must be 'enabled' or 'disabled' (got '{{ gpu_passthrough_state }}')"
+
+# Detect whether this host boots via proxmox-boot-tool (ESP-managed boot, e.g.
+# ZFS-on-root). If so, handlers must run `proxmox-boot-tool refresh` so changes
+# reach the actual boot configs on the EFI System Partitions.
+- name: Detect proxmox-boot-tool
+  ansible.builtin.stat:
+    path: /etc/kernel/proxmox-boot-uuids
+  register: gpu_pbt_marker
+
+- name: Set proxmox-boot-tool fact
+  ansible.builtin.set_fact:
+    gpu_passthrough_proxmox_boot: "{{ gpu_pbt_marker.stat.exists }}"
+
+# ------------------------------------------------------------------
+# Safety: refuse to DISABLE passthrough while a passthrough VM runs.
+# (Host and a VM cannot own the GPU at the same time.)
+# ------------------------------------------------------------------
+- name: Check whether passthrough VMs are running
+  when: gpu_passthrough_state == 'disabled'
+  shell: "qm status {{ item }} 2>/dev/null | grep -q running && echo running || echo stopped"
+  register: gpu_vm_status
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  loop:
+    - 100
+    - 101
+    - 102
+
+- name: Fail if a passthrough VM is still running
+  when:
+    - gpu_passthrough_state == 'disabled'
+    - gpu_vm_status.results | selectattr('stdout', 'equalto', 'running') | list | length > 0
+  fail:
+    msg: >-
+      Cannot disable GPU passthrough while VM(s)
+      {{ gpu_vm_status.results | selectattr('stdout', 'equalto', 'running')
+         | map(attribute='item') | list }}
+      are running. Stop them first (qm stop <vmid>).
+
+# ------------------------------------------------------------------
+# /etc/modules - vfio modules (present in both states; harmless when disabled)
+# ------------------------------------------------------------------
+- name: Ensure VFIO modules are loaded at boot
+  ansible.builtin.lineinfile:
+    path: /etc/modules
+    line: "{{ item }}"
+    state: present
+    create: true
+  loop:
+    - vfio
+    - vfio_iommu_type1
+    - vfio_pci
+    - vfio_virqfd
+  register: gpu_passthrough_modules
+  notify: update initramfs
+
+# ------------------------------------------------------------------
+# vfio.conf - only bind the GPU IDs to vfio-pci when ENABLED
+# ------------------------------------------------------------------
+- name: Bind GPU to vfio-pci (enabled)
+  when: gpu_passthrough_state == 'enabled'
+  ansible.builtin.template:
+    src: vfio.conf.j2
+    dest: /etc/modprobe.d/vfio.conf
+    owner: root
+    group: root
+    mode: "0644"
+  register: gpu_passthrough_binding_enabled
+  notify: update initramfs
+
+- name: Remove vfio-pci ID binding (disabled)
+  when: gpu_passthrough_state == 'disabled'
+  ansible.builtin.file:
+    path: /etc/modprobe.d/vfio.conf
+    state: absent
+  register: gpu_passthrough_binding_disabled
+  notify: update initramfs
+
+# ------------------------------------------------------------------
+# Blacklist host GPU drivers - present when ENABLED, removed when DISABLED
+# Managed as a dedicated block so we never fight pve-blacklist.conf.
+# ------------------------------------------------------------------
+- name: Blacklist host GPU drivers (enabled)
+  when: gpu_passthrough_state == 'enabled'
+  ansible.builtin.blockinfile:
+    path: /etc/modprobe.d/blacklist-gpu-passthrough.conf
+    create: true
+    owner: root
+    group: root
+    mode: "0644"
+    marker: "# {mark} ANSIBLE MANAGED - gpu_passthrough"
+    block: |
+      {% for m in gpu_passthrough_blacklist_modules %}
+      blacklist {{ m }}
+      {% endfor %}
+  register: gpu_passthrough_blacklist_enabled
+  notify: update initramfs
+
+- name: Remove GPU driver blacklist (disabled)
+  when: gpu_passthrough_state == 'disabled'
+  ansible.builtin.file:
+    path: /etc/modprobe.d/blacklist-gpu-passthrough.conf
+    state: absent
+  register: gpu_passthrough_blacklist_disabled
+  notify: update initramfs
+
+# ------------------------------------------------------------------
+# GRUB cmdline - framebuffer-off params present only when ENABLED
+# ------------------------------------------------------------------
+- name: Compute desired GRUB cmdline
+  ansible.builtin.set_fact:
+    gpu_grub_cmdline: >-
+      {{ (gpu_passthrough_grub_pre_params
+          + (gpu_passthrough_grub_fb_params if gpu_passthrough_state == 'enabled' else [])
+          + gpu_passthrough_grub_post_params
+          + (gpu_passthrough_grub_fb_trailing_params if gpu_passthrough_state == 'enabled' else []))
+         | join(' ') }}
+
+- name: Set GRUB_CMDLINE_LINUX_DEFAULT
+  ansible.builtin.lineinfile:
+    path: /etc/default/grub
+    regexp: '^GRUB_CMDLINE_LINUX_DEFAULT='
+    line: 'GRUB_CMDLINE_LINUX_DEFAULT="{{ gpu_grub_cmdline }}"'
+    state: present
+  register: gpu_passthrough_grub
+  notify: update grub
+
+- name: Record whether GPU boot configuration changed
+  ansible.builtin.set_fact:
+    gpu_passthrough_config_changed: >-
+      {{ gpu_passthrough_modules.changed or
+         gpu_passthrough_binding_enabled.changed or
+         gpu_passthrough_binding_disabled.changed or
+         gpu_passthrough_blacklist_enabled.changed or
+         gpu_passthrough_blacklist_disabled.changed or
+         gpu_passthrough_grub.changed }}
+
+# ------------------------------------------------------------------
+# Flush handlers now so grub/initramfs are rebuilt before any reboot
+# ------------------------------------------------------------------
+- name: Apply grub / initramfs changes
+  ansible.builtin.meta: flush_handlers
+
+- name: Report resulting state
+  ansible.builtin.debug:
+    msg: >-
+      GPU passthrough desired state is '{{ gpu_passthrough_state }}'.
+      {{ 'Boot configuration changed; a reboot is required.' if gpu_passthrough_config_changed else
+      'Boot configuration is already current; no reboot is required.' }}
+
+- name: Reboot to apply GPU passthrough change
+  when:
+    - gpu_passthrough_reboot | bool
+    - gpu_passthrough_config_changed | bool
+  ansible.builtin.reboot:
+    msg: "Rebooting to apply gpu_passthrough_state={{ gpu_passthrough_state }}"
+    reboot_timeout: 600
