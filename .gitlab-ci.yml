@@ -21,9 +21,12 @@ lint:
 ansible-syntax:
   stage: validate
   image: python:3.12
+  variables:
+    ANSIBLE_CONFIG: "${CI_PROJECT_DIR}/ansible/ansible.cfg"
   before_script:
     - python -m venv .venv/ansible
     - .venv/ansible/bin/pip install -r requirements.txt
+    - touch ansible/.vault_pass
   script:
     - ./bin/ansible.sh syntax
 
