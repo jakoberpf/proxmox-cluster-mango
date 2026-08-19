@@ -1,6 +1,6 @@
 # Observed live state
 
-Last verified: 2026-08-17. Re-run `make audit` before relying on this snapshot.
+Last verified: 2026-08-19. Re-run `make audit` before relying on this snapshot.
 
 ## Platform
 
@@ -11,13 +11,20 @@ Last verified: 2026-08-17. Re-run `make audit` before relying on this snapshot.
 - NetBird: `100.76.203.103`, also providing the host resolver configuration.
 - An nginx reverse proxy (`reverse_proxy` role, `plays/proxy.yml`) terminates TLS for
   `gitlab.cloudsium.de` on `192.168.8.56:443` and proxies to `http://10.42.1.100:80`.
+- SDN zone `stacks` (simple): `vngitlab` 10.42.1.0/24 and `vnagent` 10.42.2.0/24,
+  gateways on the host, dnsmasq DHCP/DNS, SNAT egress via vmbr0, host-local
+  inter-vnet routing. DHCP serves only MACs registered in
+  `/etc/dnsmasq.d/stacks/ethers` (PVE IPAM API no-ops on this build).
 - `enp9s0` is disconnected; `wlp3s0` is unused.
 
 ## Proxmox objects
 
-- 10 QEMU VMs and 3 LXCs; 5 VMs and all 3 LXCs were running during inspection.
-- No Proxmox resource pools, HA resources, or replication jobs.
-- Only `root@pam` exists; there are no groups, custom roles, ACLs, or API tokens.
+- 7 QEMU VMs and 3 LXCs. VMs 400 (`gitlab-primary`), 410–412 (Talos cluster
+  `gitlab`), and 420–422 (Talos cluster `agentic-system`) belong to the stack
+  repositories `proxmox/stacks/gitlab` and `proxmox/stacks/agentic-system`.
+- Resource pools `gitlab` and `agentic-system`; service users
+  `svc-gitlab@pve` / `svc-agentic-system@pve` with privilege-separated API
+  tokens and scoped ACLs (managed by `terraform/` in this repository).
 - The PVE firewall is disabled and has no cluster/node rules.
 - One enabled backup job targets powered-off PBS storage and VM 201.
 - PBS storages `pbs-mango` and `pbs-pineapple` are configured but unavailable.
