@@ -26,7 +26,8 @@ ansible-syntax:
   before_script:
     - python -m venv .venv/ansible
     - .venv/ansible/bin/pip install -r requirements.txt
-    - touch ansible/.vault_pass
+    - printf '%s' "${ANSIBLE_VAULT_PASS}" > ansible/.vault_pass
+    - chmod 600 ansible/.vault_pass
   script:
     - ./bin/ansible.sh syntax
 
