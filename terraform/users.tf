@@ -70,3 +70,37 @@ resource "proxmox_virtual_environment_acl" "stack_vnet" {
   role_id  = proxmox_virtual_environment_role.stack_sdn.role_id
   token_id = proxmox_virtual_environment_user_token.stack[each.key].id
 }
+
+# Privilege-separated tokens are capped by the backing user's permissions, so
+# the user needs the same grants for the token ACLs to take effect.
+resource "proxmox_virtual_environment_acl" "stack_pool_user" {
+  for_each = local.stacks
+
+  path    = "/pool/${proxmox_virtual_environment_pool.stack[each.key].pool_id}"
+  role_id = "PVEVMAdmin"
+  user_id = proxmox_virtual_environment_user.stack[each.key].user_id
+}
+
+resource "proxmox_virtual_environment_acl" "stack_storage_vms_user" {
+  for_each = local.stacks
+
+  path    = "/storage/vms"
+  role_id = proxmox_virtual_environment_role.stack_datastore.role_id
+  user_id = proxmox_virtual_environment_user.stack[each.key].user_id
+}
+
+resource "proxmox_virtual_environment_acl" "stack_storage_local_user" {
+  for_each = local.stacks
+
+  path    = "/storage/local"
+  role_id = proxmox_virtual_environment_role.stack_datastore.role_id
+  user_id = proxmox_virtual_environment_user.stack[each.key].user_id
+}
+
+resource "proxmox_virtual_environment_acl" "stack_vnet_user" {
+  for_each = local.stacks
+
+  path    = "/sdn/zones/${proxmox_virtual_environment_sdn_zone_simple.stacks.id}/${proxmox_virtual_environment_sdn_vnet.stack[each.key].id}"
+  role_id = proxmox_virtual_environment_role.stack_sdn.role_id
+  user_id = proxmox_virtual_environment_user.stack[each.key].user_id
+}
