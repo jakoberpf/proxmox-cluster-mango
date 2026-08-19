@@ -25,6 +25,10 @@
 | Read-only audit | `make audit` |
 | Preview | `make plan` |
 | Apply reviewed plan | `make apply CONFIRM=mango` |
+| CSI preview | `make csi-plan` |
+| CSI apply | `CSI_CONFIRM=mango-ceph-csi ./bin/ansible.sh csi-apply` |
+| SDN preview | `make sdn-plan` |
+| SDN apply | `SDN_CONFIRM=mango-sdn ./bin/ansible.sh sdn-apply` |
 | Proxy preview | `make proxy-plan` |
 | Proxy apply | `PROXY_CONFIRM=mango-proxy ./bin/ansible.sh proxy-apply` |
 

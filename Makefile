@@ -1,4 +1,4 @@
-.PHONY: help setup lint syntax audit plan apply rgw-audit rgw-plan proxy-plan terraform
+.PHONY: help setup lint syntax audit plan apply rgw-audit rgw-plan csi-plan sdn-plan proxy-plan terraform
 
 help:
 	@echo "mango node-management targets"
@@ -10,6 +10,8 @@ help:
 	@echo "  apply   Apply after review; requires CONFIRM=mango"
 	@echo "  rgw-audit              Read-only Ceph RGW readiness audit"
 	@echo "  rgw-plan PHASE=<name>  Preview one gated RGW phase"
+	@echo "  csi-plan               Preview the gated Ceph CSI play"
+	@echo "  sdn-plan               Preview the gated SDN host play"
 	@echo "  proxy-plan             Preview the gated reverse proxy play"
 
 setup:
@@ -49,6 +51,12 @@ rgw-plan:
 
 proxy-plan:
 	@./bin/ansible.sh proxy-check
+
+csi-plan:
+	@./bin/ansible.sh csi-check
+
+sdn-plan:
+	@./bin/ansible.sh sdn-check
 
 terraform:
 	@./bin/terraform.sh

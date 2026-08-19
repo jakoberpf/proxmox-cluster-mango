@@ -1,0 +1,165 @@
+---
+- name: Read existing pool details
+  ansible.builtin.command: ceph osd pool ls detail --format json
+  register: ceph_csi_pool_details_command
+  changed_when: false
+  check_mode: false
+
+- name: Read existing CephX users
+  ansible.builtin.command: ceph auth ls --format json
+  register: ceph_csi_auth_command
+  changed_when: false
+  check_mode: false
+  no_log: true
+
+- name: Index the live Ceph state
+  ansible.builtin.set_fact:
+    ceph_csi_pool_details: "{{ ceph_csi_pool_details_command.stdout | from_json }}"
+    ceph_csi_pool_names: >-
+      {{ ceph_csi_pool_details_command.stdout | from_json | map(attribute='pool_name') | list }}
+    ceph_csi_auth_dump: "{{ (ceph_csi_auth_command.stdout | from_json).auth_dump }}"
+    ceph_csi_auth_entities: >-
+      {{ (ceph_csi_auth_command.stdout | from_json).auth_dump | map(attribute='entity') | list }}
+    ceph_csi_pool_creates: >-
+      {{ ceph_csi_pools | map(attribute='name') |
+         difference(ceph_csi_pool_details_command.stdout | from_json | map(attribute='pool_name') | list) | list }}
+
+- name: Identify drifted CSI pool settings
+  ansible.builtin.set_fact:
+    ceph_csi_pool_drift: >-
+      {{ ceph_csi_pool_drift | default([]) + [{
+           'pool': item.0.name,
+           'name': item.1.name,
+           'value': item.1.value | string,
+         }] }}
+  when: >-
+    (item.0.name in ceph_csi_pool_creates) or
+    ((ceph_csi_pool_details |
+      selectattr('pool_name', 'equalto', item.0.name) | first |
+      attr(item.1.name) | default('') | string) != (item.1.value | string))
+  loop: "{{ ceph_csi_pools | product(ceph_csi_pool_options) | list }}"
+
+- name: Identify CSI pools missing the application tag
+  ansible.builtin.set_fact:
+    ceph_csi_app_pending: >-
+      {{ ceph_csi_app_pending | default([]) + [item.name] }}
+  when: >-
+    (item.name in ceph_csi_pool_creates) or
+    (ceph_csi_pool_application not in
+     ((ceph_csi_pool_details |
+       selectattr('pool_name', 'equalto', item.name) | first).application_metadata | default({})))
+  loop: "{{ ceph_csi_pools }}"
+
+- name: Identify missing or drifted CSI CephX users
+  vars:
+    ceph_csi_entity: "client.{{ item.name }}"
+    ceph_csi_desired_caps:
+      mon: profile rbd
+      osd: "profile rbd pool={{ item.pool }}"
+      mgr: allow rw
+  ansible.builtin.set_fact:
+    ceph_csi_user_pending: >-
+      {{ ceph_csi_user_pending | default([]) + [item.name] }}
+  when: >-
+    (ceph_csi_entity not in ceph_csi_auth_entities) or
+    (((ceph_csi_auth_dump |
+       selectattr('entity', 'equalto', ceph_csi_entity) | first).caps | default({})) != ceph_csi_desired_caps)
+  loop: "{{ ceph_csi_users }}"
+
+- name: Preview the intended CSI state in check mode
+  when: ansible_check_mode
+  ansible.builtin.debug:
+    msg:
+      pools_to_create: "{{ ceph_csi_pool_creates }}"
+      pool_settings_to_set: "{{ ceph_csi_pool_drift | default([]) }}"
+      application_tag_pending: "{{ ceph_csi_app_pending | default([]) }}"
+      users_to_create_or_update: "{{ ceph_csi_user_pending | default([]) }}"
+
+- name: Create missing CSI RBD pools
+  when: not ansible_check_mode
+  ansible.builtin.command:
+    argv:
+      - ceph
+      - osd
+      - pool
+      - create
+      - "{{ item }}"
+      - "{{ ceph_csi_pg_num | string }}"
+      - "{{ ceph_csi_pg_num | string }}"
+      - replicated
+      - "{{ ceph_csi_pool_crush_rule }}"
+  loop: "{{ ceph_csi_pool_creates }}"
+  changed_when: true
+
+- name: Apply drifted CSI pool settings
+  when: not ansible_check_mode
+  ansible.builtin.command: >-
+    ceph osd pool set {{ item.pool }} {{ item.name }} {{ item.value }}
+  loop: "{{ ceph_csi_pool_drift | default([]) }}"
+  changed_when: true
+
+- name: Enable the rbd application tag on CSI pools
+  when: not ansible_check_mode
+  ansible.builtin.command: >-
+    ceph osd pool application enable {{ item }} {{ ceph_csi_pool_application }}
+  loop: "{{ ceph_csi_app_pending | default([]) }}"
+  changed_when: true
+
+- name: Create or update the CSI CephX users
+  when:
+    - not ansible_check_mode
+    - item.name in (ceph_csi_user_pending | default([]))
+  ansible.builtin.command:
+    argv:
+      - ceph
+      - auth
+      - get-or-create
+      - "client.{{ item.name }}"
+      - mon
+      - profile rbd
+      - osd
+      - "profile rbd pool={{ item.pool }}"
+      - mgr
+      - allow rw
+      - --format
+      - json
+  loop: "{{ ceph_csi_users }}"
+  changed_when: true
+  no_log: true
+
+- name: Read final CSI pool state
+  when: not ansible_check_mode
+  ansible.builtin.command: ceph osd pool ls detail --format json
+  register: ceph_csi_final_pool_details_command
+  changed_when: false
+
+- name: Read final CSI CephX users
+  when: not ansible_check_mode
+  ansible.builtin.command: ceph auth ls --format json
+  register: ceph_csi_final_auth_command
+  changed_when: false
+  no_log: true
+
+- name: Verify the final CSI state
+  when: not ansible_check_mode
+  ansible.builtin.set_fact:
+    ceph_csi_verify_ok: >-
+      {{ (ceph_csi_pools | map(attribute='name') |
+          difference((ceph_csi_final_pool_details_command.stdout | from_json) |
+          map(attribute='pool_name') | list) | list | length == 0)
+         and
+         ((ceph_csi_final_pool_details_command.stdout | from_json) |
+          selectattr('pool_name', 'in', ceph_csi_pools | map(attribute='name') | list) |
+          rejectattr('pg_num', 'equalto', ceph_csi_pg_num) | list | length == 0)
+         and
+         (ceph_csi_users | map(attribute='name') |
+          map('regex_replace', '^(.*)$', 'client.\1') |
+          difference((ceph_csi_final_auth_command.stdout | from_json).auth_dump |
+          map(attribute='entity') | list) | list | length == 0) }}
+
+- name: Fail when the final CSI state has not converged
+  when:
+    - not ansible_check_mode
+    - not ceph_csi_verify_ok | bool
+  ansible.builtin.fail:
+    msg: CSI pools or CephX users are missing or drifted after convergence.

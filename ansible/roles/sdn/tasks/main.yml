@@ -1,0 +1,58 @@
+---
+- name: Preview the SDN host configuration in check mode
+  when: ansible_check_mode
+  ansible.builtin.debug:
+    msg:
+      ip_forward: "{{ sdn_ip_forward_key }}=1 persisted in {{ sdn_sysctl_conf }} and set at runtime"
+      dnsmasq_default_service: disabled and masked
+      dnsmasq_stacks_service: "{{ sdn_dnsmasq_service }} enabled and started"
+      ethers: "{{ sdn_ethers | length }} reservations in {{ sdn_ethers_path }}"
+
+- name: Read the runtime IPv4 forwarding setting
+  ansible.builtin.command: sysctl -n net.ipv4.ip_forward
+  register: sdn_ip_forward_runtime
+  changed_when: false
+  check_mode: false
+
+- name: Persist IPv4 forwarding in sysctl.conf
+  ansible.builtin.lineinfile:
+    path: "{{ sdn_sysctl_conf }}"
+    regexp: '^#?\s*net\.ipv4\.ip_forward\s*='
+    line: "{{ sdn_ip_forward_key }}=1"
+
+- name: Enable IPv4 forwarding at runtime
+  when:
+    - not ansible_check_mode
+    - sdn_ip_forward_runtime.stdout != "1"
+  ansible.builtin.command: sysctl -w net.ipv4.ip_forward=1
+  changed_when: true
+
+- name: Install dnsmasq
+  ansible.builtin.apt:
+    name: dnsmasq
+    state: present
+    update_cache: false
+
+- name: Disable and mask the default dnsmasq service
+  when: not ansible_check_mode
+  ansible.builtin.systemd:
+    name: dnsmasq.service
+    enabled: false
+    state: stopped
+    masked: true
+
+- name: Enable and start the stacks dnsmasq instance
+  when: not ansible_check_mode
+  ansible.builtin.systemd:
+    name: "{{ sdn_dnsmasq_service }}"
+    enabled: true
+    state: started
+
+- name: Configure the stacks DHCP reservations
+  ansible.builtin.template:
+    src: ethers.j2
+    dest: "{{ sdn_ethers_path }}"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart stacks dnsmasq

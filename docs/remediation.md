@@ -49,8 +49,9 @@ into both Talos clusters (verified with a bound+mounted test PVC). Remaining:
    and keep independent copies of important S3 data outside mango.
 3. Configure RGW consumers, buckets, policies, and lifecycle rules per
    `docs/s3.md` and `inventory/s3-consumers.yaml`, then smoke-test.
-4. Codify the ceph-csi setup: pools/CephX users into Ansible here, Helm values
-   and the csi-rbd secrets into the stack repos' flux/ (sops), then adopt the
+4. The ceph-csi pools and CephX users are codified in the `ceph_csi` role
+   (`plays/ceph_csi.yml`). Remaining: move the ceph-csi Helm values and the
+   csi-rbd secrets into the stack repos' flux/ (sops), then adopt the
    imperative Helm releases into Flux.
 5. The mgr `nfs` module crashes periodically (RECENT_MGR_MODULE_CRASH since
    2026-08-18); investigate or disable it if NFS is not used.

@@ -1,0 +1,4 @@
+# Managed by Ansible (sdn role); manual edits will be overwritten.
+{% for entry in sdn_ethers %}
+{{ entry.mac }},{{ entry.ip }}
+{% endfor %}

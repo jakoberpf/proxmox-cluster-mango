@@ -15,6 +15,9 @@ Last verified: 2026-08-19. Re-run `make audit` before relying on this snapshot.
   gateways on the host, dnsmasq DHCP/DNS, SNAT egress via vmbr0, host-local
   inter-vnet routing. DHCP serves only MACs registered in
   `/etc/dnsmasq.d/stacks/ethers` (PVE IPAM API no-ops on this build).
+  The ethers reservations, dnsmasq unit state, and host IPv4 forwarding are
+  managed by the `sdn` role (`plays/sdn.yml`); the CSI RBD pools and CephX
+  users are managed by the `ceph_csi` role (`plays/ceph_csi.yml`).
 - `enp9s0` is disconnected; `wlp3s0` is unused.
 
 ## Proxmox objects

@@ -1,0 +1,33 @@
+---
+# The SDN zone `stacks` itself (zone, vnets, subnets) is Terraform-managed in
+# terraform/sdn.tf. This role covers the host-level bits terraform does not.
+sdn_sysctl_conf: /etc/sysctl.conf
+sdn_ip_forward_key: net.ipv4.ip_forward
+sdn_ethers_path: /etc/dnsmasq.d/stacks/ethers
+sdn_dnsmasq_service: dnsmasq@stacks.service
+
+# PVE's IPAM API no-ops on this build, so this ethers file is the
+# registration point for DHCP reservations on the SDN zone. New stack VMs
+# need an entry here (or a pinned MAC in their terraform).
+sdn_ethers:
+  - mac: BC:24:11:D7:9F:E7
+    ip: 10.42.1.100
+    name: gitlab-primary
+  - mac: BC:24:11:1D:97:BC
+    ip: 10.42.1.101
+    name: gitlab-cp-0
+  - mac: BC:24:11:A9:05:F1
+    ip: 10.42.1.102
+    name: gitlab-worker-0
+  - mac: BC:24:11:1F:1A:85
+    ip: 10.42.1.103
+    name: gitlab-worker-1
+  - mac: BC:24:11:A0:04:20
+    ip: 10.42.2.101
+    name: agentic-system-cp-0
+  - mac: BC:24:11:A0:04:21
+    ip: 10.42.2.102
+    name: agentic-system-worker-0
+  - mac: BC:24:11:A0:04:22
+    ip: 10.42.2.103
+    name: agentic-system-worker-1

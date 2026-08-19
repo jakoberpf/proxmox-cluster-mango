@@ -1,0 +1,30 @@
+---
+# RBD pools consumed by ceph-csi-rbd in the Talos stack clusters. Created
+# imperatively on 2026-08-19; this role converges the live state idempotently
+# and only sets pool options that differ.
+ceph_csi_pg_num: 8
+ceph_csi_pools:
+  - name: k8s-gitlab
+  - name: k8s-agentic
+ceph_csi_pool_options:
+  - name: size
+    value: 3
+  - name: min_size
+    value: 2
+  - name: pg_num
+    value: "{{ ceph_csi_pg_num }}"
+  - name: pg_autoscale_mode
+    value: "off"
+ceph_csi_pool_application: rbd
+ceph_csi_pool_crush_rule: replicated_rule
+
+# CephX users for ceph-csi-rbd, one per stack cluster. The live keys were
+# created on 2026-08-19 and already distributed to both clusters; copies
+# remain on mango at /root/.csi-gitlab-key and /root/.csi-agentic-key
+# (mode 0600). `ceph auth get-or-create` returns the existing key for a
+# matching user and never rotates it, so re-running is safe.
+ceph_csi_users:
+  - name: csi-gitlab
+    pool: k8s-gitlab
+  - name: csi-agentic
+    pool: k8s-agentic

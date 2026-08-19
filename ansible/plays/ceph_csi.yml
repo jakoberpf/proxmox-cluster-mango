@@ -1,0 +1,17 @@
+---
+- name: Converge Ceph CSI pools and CephX users on mango
+  hosts: proxmox_nodes
+  become: true
+  gather_facts: true
+
+  pre_tasks:
+    - name: Require the CSI confirmation token outside check mode
+      ansible.builtin.assert:
+        that:
+          - ansible_check_mode or (mango_ceph_csi_confirm | default('')) == 'mango-ceph-csi'
+        fail_msg: >-
+          Preview with --check --diff. Applying requires
+          -e mango_ceph_csi_confirm=mango-ceph-csi.
+
+  roles:
+    - role: ceph_csi

@@ -1,0 +1,17 @@
+---
+- name: Converge the SDN host configuration on mango
+  hosts: proxmox_nodes
+  become: true
+  gather_facts: true
+
+  pre_tasks:
+    - name: Require the SDN confirmation token outside check mode
+      ansible.builtin.assert:
+        that:
+          - ansible_check_mode or (mango_sdn_confirm | default('')) == 'mango-sdn'
+        fail_msg: >-
+          Preview with --check --diff. Applying requires
+          -e mango_sdn_confirm=mango-sdn.
+
+  roles:
+    - role: sdn

@@ -16,6 +16,8 @@ case "$mode" in
     ansible-playbook plays/main.yaml --syntax-check
     ansible-playbook plays/audit.yaml --syntax-check
     ansible-playbook plays/ceph_rgw.yml --syntax-check
+    ansible-playbook plays/ceph_csi.yml --syntax-check
+    ansible-playbook plays/sdn.yml --syntax-check
     ansible-playbook plays/proxy.yml --syntax-check
     ansible-playbook plays/gpu_passthrough.yml --syntax-check
     ansible-playbook plays/wakeonlan.yml --syntax-check
@@ -33,6 +35,28 @@ case "$mode" in
     rgw_phase=${RGW_PHASE:-audit}
     ansible-playbook plays/ceph_rgw.yml --check --diff --limit mango \
       -e "mango_rgw_phase=$rgw_phase"
+    ;;
+  csi-check)
+    ansible-playbook plays/ceph_csi.yml --check --diff --limit mango
+    ;;
+  csi-apply)
+    if [[ ${CSI_CONFIRM:-} != mango-ceph-csi ]]; then
+      echo "Refusing CSI apply: set CSI_CONFIRM=mango-ceph-csi after reviewing csi-check." >&2
+      exit 2
+    fi
+    ansible-playbook plays/ceph_csi.yml --diff --limit mango \
+      -e mango_ceph_csi_confirm=mango-ceph-csi
+    ;;
+  sdn-check)
+    ansible-playbook plays/sdn.yml --check --diff --limit mango
+    ;;
+  sdn-apply)
+    if [[ ${SDN_CONFIRM:-} != mango-sdn ]]; then
+      echo "Refusing SDN apply: set SDN_CONFIRM=mango-sdn after reviewing sdn-check." >&2
+      exit 2
+    fi
+    ansible-playbook plays/sdn.yml --diff --limit mango \
+      -e mango_sdn_confirm=mango-sdn
     ;;
   proxy-check)
     ansible-playbook plays/proxy.yml --check --diff --limit mango
@@ -53,7 +77,7 @@ case "$mode" in
     ansible-playbook plays/main.yaml --diff --limit mango
     ;;
   *)
-    echo "Usage: $0 {syntax|audit|check|apply|rgw-audit|rgw-check|proxy-check|proxy-apply}" >&2
+    echo "Usage: $0 {syntax|audit|check|apply|rgw-audit|rgw-check|csi-check|csi-apply|sdn-check|sdn-apply|proxy-check|proxy-apply}" >&2
     exit 2
     ;;
 esac
