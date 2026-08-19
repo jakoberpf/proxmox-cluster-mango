@@ -37,19 +37,31 @@ guests:
     name: Backblaze
     type: qemu
     owner: unassigned
-  - vmid: 3001
-    name: athena-production-qbd-controlplane-0-dzi
+  - vmid: 400
+    name: gitlab-primary
     type: qemu
-    owner: external
-  - vmid: 3011
-    name: athena-production-qbd-worker-0-ayv
+    owner: ../stacks/gitlab
+  - vmid: 410
+    name: gitlab-cp-0
     type: qemu
-    owner: external
-  - vmid: 3012
-    name: athena-production-qbd-worker-1-roa
+    owner: ../stacks/gitlab
+  - vmid: 411
+    name: gitlab-worker-0
     type: qemu
-    owner: external
-  - vmid: 3013
-    name: athena-production-qbd-worker-2-olr
+    owner: ../stacks/gitlab
+  - vmid: 412
+    name: gitlab-worker-1
     type: qemu
-    owner: external
+    owner: ../stacks/gitlab
+  - vmid: 420
+    name: agentic-system-cp-0
+    type: qemu
+    owner: ../stacks/agentic-system
+  - vmid: 421
+    name: agentic-system-worker-0
+    type: qemu
+    owner: ../stacks/agentic-system
+  - vmid: 422
+    name: agentic-system-worker-1
+    type: qemu
+    owner: ../stacks/agentic-system
