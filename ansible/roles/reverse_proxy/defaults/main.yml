@@ -1,0 +1,18 @@
+---
+proxy_cert_name: gitlab.cloudsium.de
+proxy_server_name: "{{ proxy_cert_name }}"
+proxy_listen_address: 192.168.8.56
+proxy_https_port: 443
+proxy_upstream: http://10.42.1.100:80
+proxy_http_redirect: true
+
+# Let's Encrypt via the Cloudflare DNS-01 challenge. Reuses the certbot
+# installation and the scoped credentials file installed by the ceph_rgw
+# daemon phase (vault_mango_rgw_cloudflare_api_token, DNS write on
+# cloudsium.de only). certbot.timer renews the certificate and the deploy
+# hook reloads nginx.
+proxy_acme_email: postmaster@cloudsium.de
+proxy_cloudflare_credentials_path: /etc/letsencrypt/cloudflare.ini
+proxy_letsencrypt_dir: "/etc/letsencrypt/live/{{ proxy_cert_name }}"
+proxy_nginx_site_path: /etc/nginx/sites-available/reverse-proxy
+proxy_nginx_site_link: /etc/nginx/sites-enabled/reverse-proxy

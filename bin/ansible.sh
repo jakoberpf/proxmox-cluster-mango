@@ -16,6 +16,7 @@ case "$mode" in
     ansible-playbook plays/main.yaml --syntax-check
     ansible-playbook plays/audit.yaml --syntax-check
     ansible-playbook plays/ceph_rgw.yml --syntax-check
+    ansible-playbook plays/proxy.yml --syntax-check
     ansible-playbook plays/gpu_passthrough.yml --syntax-check
     ansible-playbook plays/wakeonlan.yml --syntax-check
     ;;
@@ -33,6 +34,17 @@ case "$mode" in
     ansible-playbook plays/ceph_rgw.yml --check --diff --limit mango \
       -e "mango_rgw_phase=$rgw_phase"
     ;;
+  proxy-check)
+    ansible-playbook plays/proxy.yml --check --diff --limit mango
+    ;;
+  proxy-apply)
+    if [[ ${PROXY_CONFIRM:-} != mango-proxy ]]; then
+      echo "Refusing proxy apply: set PROXY_CONFIRM=mango-proxy after reviewing proxy-check." >&2
+      exit 2
+    fi
+    ansible-playbook plays/proxy.yml --diff --limit mango \
+      -e mango_proxy_confirm=mango-proxy
+    ;;
   apply)
     if [[ ${CONFIRM:-} != mango ]]; then
       echo "Refusing apply: set CONFIRM=mango after reviewing check mode." >&2
@@ -41,7 +53,7 @@ case "$mode" in
     ansible-playbook plays/main.yaml --diff --limit mango
     ;;
   *)
-    echo "Usage: $0 {syntax|audit|check|apply|rgw-audit|rgw-check}" >&2
+    echo "Usage: $0 {syntax|audit|check|apply|rgw-audit|rgw-check|proxy-check|proxy-apply}" >&2
     exit 2
     ;;
 esac

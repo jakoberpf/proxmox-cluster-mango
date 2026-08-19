@@ -25,6 +25,8 @@
 | Read-only audit | `make audit` |
 | Preview | `make plan` |
 | Apply reviewed plan | `make apply CONFIRM=mango` |
+| Proxy preview | `make proxy-plan` |
+| Proxy apply | `PROXY_CONFIRM=mango-proxy ./bin/ansible.sh proxy-apply` |
 
 ## Repository conventions
 

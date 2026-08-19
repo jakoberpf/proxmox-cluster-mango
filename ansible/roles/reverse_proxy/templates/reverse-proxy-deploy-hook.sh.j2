@@ -1,0 +1,8 @@
+#!/bin/bash
+# Managed by Ansible (reverse_proxy role). Reload nginx only when the
+# reverse-proxy certificate was renewed. Does not touch the rgw-mango.sh hook.
+set -euo pipefail
+
+if [[ "${RENEWED_LINEAGE:-}" == "{{ proxy_letsencrypt_dir }}" ]]; then
+    systemctl reload nginx.service
+fi

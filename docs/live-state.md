@@ -9,6 +9,8 @@ Last verified: 2026-08-17. Re-run `make audit` before relying on this snapshot.
 - 32 logical CPUs, 251 GiB RAM, no host swap.
 - Management/LAN: `vmbr0` on `enp5s0`, `192.168.8.56/21`, gateway `192.168.8.1`.
 - NetBird: `100.76.203.103`, also providing the host resolver configuration.
+- An nginx reverse proxy (`reverse_proxy` role, `plays/proxy.yml`) terminates TLS for
+  `gitlab.cloudsium.de` on `192.168.8.56:443` and proxies to `http://10.42.1.100:80`.
 - `enp9s0` is disconnected; `wlp3s0` is unused.
 
 ## Proxmox objects

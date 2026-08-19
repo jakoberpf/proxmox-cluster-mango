@@ -1,0 +1,17 @@
+---
+- name: Configure the nginx reverse proxy on mango
+  hosts: proxmox_nodes
+  become: true
+  gather_facts: true
+
+  pre_tasks:
+    - name: Require the proxy confirmation token outside check mode
+      ansible.builtin.assert:
+        that:
+          - ansible_check_mode or (mango_proxy_confirm | default('')) == 'mango-proxy'
+        fail_msg: >-
+          Preview with --check --diff. Applying requires
+          -e mango_proxy_confirm=mango-proxy.
+
+  roles:
+    - role: reverse_proxy

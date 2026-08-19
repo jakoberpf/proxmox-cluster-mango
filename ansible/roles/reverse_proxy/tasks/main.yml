@@ -1,0 +1,151 @@
+---
+- name: Check for an existing Let's Encrypt certificate
+  ansible.builtin.stat:
+    path: "{{ proxy_letsencrypt_dir }}/fullchain.pem"
+  register: proxy_letsencrypt_cert
+  check_mode: false
+
+- name: Check for the Cloudflare DNS-01 credentials
+  ansible.builtin.stat:
+    path: "{{ proxy_cloudflare_credentials_path }}"
+  register: proxy_cloudflare_credentials
+  check_mode: false
+
+- name: Require the Cloudflare credentials when no certificate exists
+  ansible.builtin.assert:
+    that:
+      - >-
+        ansible_check_mode or proxy_letsencrypt_cert.stat.exists or
+        proxy_cloudflare_credentials.stat.exists
+    fail_msg: >-
+      Issuing a certificate requires the scoped Cloudflare DNS-01 credentials
+      at {{ proxy_cloudflare_credentials_path }}, installed by the ceph_rgw
+      daemon phase from vault_mango_rgw_cloudflare_api_token.
+
+- name: Preview the reverse proxy configuration in check mode
+  when: ansible_check_mode
+  ansible.builtin.debug:
+    msg:
+      listen: "{{ proxy_listen_address }}:{{ proxy_https_port }}"
+      server_name: "{{ proxy_server_name }}"
+      upstream: "{{ proxy_upstream }}"
+      http_redirect: "{{ proxy_http_redirect }}"
+      prerequisites:
+        letsencrypt_certificate_present: "{{ proxy_letsencrypt_cert.stat.exists }}"
+        cloudflare_credentials_present: "{{ proxy_cloudflare_credentials.stat.exists }}"
+
+- name: Install nginx and certbot with the Cloudflare DNS plugin
+  ansible.builtin.apt:
+    name:
+      - nginx
+      - certbot
+      - python3-certbot-dns-cloudflare
+    state: present
+    update_cache: false
+
+- name: Enable certbot renewal
+  when: not ansible_check_mode
+  ansible.builtin.systemd:
+    name: certbot.timer
+    enabled: true
+    state: started
+
+- name: Check whether the existing certificate covers the proxy name
+  when: proxy_letsencrypt_cert.stat.exists
+  ansible.builtin.command:
+    argv:
+      - openssl
+      - x509
+      - -in
+      - "{{ proxy_letsencrypt_dir }}/fullchain.pem"
+      - -noout
+      - -checkhost
+      - "{{ proxy_server_name }}"
+  register: proxy_cert_coverage
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Issue the Let's Encrypt certificate through DNS-01
+  when:
+    - not ansible_check_mode
+    - >-
+      (not proxy_letsencrypt_cert.stat.exists) or
+      ((proxy_cert_coverage | default({})).rc | default(1) != 0)
+  ansible.builtin.command:
+    argv:
+      - certbot
+      - certonly
+      - --dns-cloudflare
+      - --dns-cloudflare-credentials
+      - "{{ proxy_cloudflare_credentials_path }}"
+      - --domain
+      - "{{ proxy_cert_name }}"
+      - --cert-name
+      - "{{ proxy_cert_name }}"
+      - --keep-until-expiring
+      - --non-interactive
+      - --agree-tos
+      - --email
+      - "{{ proxy_acme_email }}"
+  register: proxy_certbot_issue
+  changed_when: >-
+    ('no action taken' not in proxy_certbot_issue.stdout) and
+    ('no action taken' not in proxy_certbot_issue.stderr)
+  no_log: true
+
+- name: Install the nginx reload deploy hook
+  ansible.builtin.template:
+    src: reverse-proxy-deploy-hook.sh.j2
+    dest: /etc/letsencrypt/renewal-hooks/deploy/reverse-proxy.sh
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Verify the proxy certificate chain
+  when: not ansible_check_mode
+  ansible.builtin.command:
+    argv:
+      - openssl
+      - verify
+      - -untrusted
+      - "{{ proxy_letsencrypt_dir }}/chain.pem"
+      - "{{ proxy_letsencrypt_dir }}/cert.pem"
+  changed_when: false
+
+- name: Verify the proxy certificate hostname
+  when: not ansible_check_mode
+  ansible.builtin.command:
+    argv:
+      - openssl
+      - x509
+      - -in
+      - "{{ proxy_letsencrypt_dir }}/fullchain.pem"
+      - -noout
+      - -checkhost
+      - "{{ proxy_server_name }}"
+  changed_when: false
+
+- name: Configure the nginx reverse proxy site
+  ansible.builtin.template:
+    src: reverse-proxy.conf.j2
+    dest: "{{ proxy_nginx_site_path }}"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload nginx
+
+- name: Enable the reverse proxy site
+  when: not ansible_check_mode
+  ansible.builtin.file:
+    src: "{{ proxy_nginx_site_path }}"
+    dest: "{{ proxy_nginx_site_link }}"
+    state: link
+  notify: Reload nginx
+
+- name: Enable and start nginx
+  when: not ansible_check_mode
+  ansible.builtin.systemd:
+    name: nginx.service
+    enabled: true
+    state: started
