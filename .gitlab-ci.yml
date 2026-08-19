@@ -1,0 +1,43 @@
+# CI for the mango platform repository.
+#
+# Runs lint and offline validation on every pipeline. Terraform plan/apply and
+# Ansible runs against mango require network access to the PVE API
+# (192.168.8.56), which the shared Hetzner runners do not have. Those jobs stay
+# manual/local until the mango-hosted gitlab-runner (stacks/gitlab cluster) is
+# registered; then they get a `mango` tag and run in CI.
+
+stages:
+  - lint
+  - validate
+
+lint:
+  stage: lint
+  image: python:3.12
+  before_script:
+    - pip install pre-commit
+  script:
+    - pre-commit run --all-files
+
+ansible-syntax:
+  stage: validate
+  image: python:3.12
+  before_script:
+    - python -m venv ansible/.venv
+    - ansible/.venv/bin/pip install -r requirements.txt
+  script:
+    - ./bin/ansible.sh syntax
+
+terraform-validate:
+  stage: validate
+  image:
+    name: docker.io/jakoberpf/devops-containers-ci-terraform:main
+  variables:
+    TF_VAR_pve_endpoint: "https://mango.cloudsium.de:8006/api2/json"
+    TF_VAR_pve_token_id: "ci-validation-only"
+    TF_VAR_pve_token_secret: "ci-validation-only"
+    TF_HTTP_USERNAME: "gitlab-ci-token"
+    TF_HTTP_PASSWORD: "${CI_JOB_TOKEN}"
+  script:
+    - terraform -chdir=terraform init -backend=true
+    - terraform -chdir=terraform fmt -check -recursive
+    - terraform -chdir=terraform validate
