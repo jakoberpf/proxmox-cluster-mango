@@ -49,6 +49,15 @@ resource "proxmox_virtual_environment_role" "stack_node" {
   ]
 }
 
+# Pool.Allocate is required to add/remove pool members (PVEVMAdmin lacks it).
+resource "proxmox_virtual_environment_role" "stack_pool" {
+  role_id = "StackPool"
+  privileges = [
+    "Pool.Audit",
+    "Pool.Allocate",
+  ]
+}
+
 resource "proxmox_virtual_environment_acl" "stack_pool" {
   for_each = local.stacks
 
@@ -128,5 +137,21 @@ resource "proxmox_virtual_environment_acl" "stack_node_user" {
 
   path    = "/nodes/mango"
   role_id = proxmox_virtual_environment_role.stack_node.role_id
+  user_id = proxmox_virtual_environment_user.stack[each.key].user_id
+}
+
+resource "proxmox_virtual_environment_acl" "stack_pool_allocate" {
+  for_each = local.stacks
+
+  path     = "/pool/${proxmox_virtual_environment_pool.stack[each.key].pool_id}"
+  role_id  = proxmox_virtual_environment_role.stack_pool.role_id
+  token_id = proxmox_virtual_environment_user_token.stack[each.key].id
+}
+
+resource "proxmox_virtual_environment_acl" "stack_pool_allocate_user" {
+  for_each = local.stacks
+
+  path    = "/pool/${proxmox_virtual_environment_pool.stack[each.key].pool_id}"
+  role_id = proxmox_virtual_environment_role.stack_pool.role_id
   user_id = proxmox_virtual_environment_user.stack[each.key].user_id
 }
