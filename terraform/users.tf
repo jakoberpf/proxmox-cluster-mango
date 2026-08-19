@@ -39,6 +39,16 @@ resource "proxmox_virtual_environment_role" "stack_sdn" {
   ]
 }
 
+# Sys.AccessNetwork is required for URL downloads to datastores
+# (query-url-metadata / download-url on the node).
+resource "proxmox_virtual_environment_role" "stack_node" {
+  role_id = "StackNode"
+  privileges = [
+    "Sys.Audit",
+    "Sys.AccessNetwork",
+  ]
+}
+
 resource "proxmox_virtual_environment_acl" "stack_pool" {
   for_each = local.stacks
 
@@ -102,5 +112,21 @@ resource "proxmox_virtual_environment_acl" "stack_vnet_user" {
 
   path    = "/sdn/zones/${proxmox_virtual_environment_sdn_zone_simple.stacks.id}/${proxmox_virtual_environment_sdn_vnet.stack[each.key].id}"
   role_id = proxmox_virtual_environment_role.stack_sdn.role_id
+  user_id = proxmox_virtual_environment_user.stack[each.key].user_id
+}
+
+resource "proxmox_virtual_environment_acl" "stack_node" {
+  for_each = local.stacks
+
+  path     = "/nodes/mango"
+  role_id  = proxmox_virtual_environment_role.stack_node.role_id
+  token_id = proxmox_virtual_environment_user_token.stack[each.key].id
+}
+
+resource "proxmox_virtual_environment_acl" "stack_node_user" {
+  for_each = local.stacks
+
+  path    = "/nodes/mango"
+  role_id = proxmox_virtual_environment_role.stack_node.role_id
   user_id = proxmox_virtual_environment_user.stack[each.key].user_id
 }
