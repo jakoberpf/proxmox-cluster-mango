@@ -39,13 +39,21 @@ subscription but receives less-tested updates.
 
 The gated RGW rollout from `docs/s3.md` was applied on 2026-08-18: bootstrap
 pools exported and merged to 8 PGs, 4+2 EC bucket-data pool created, RGW live
-at `https://s3.mango.cloudsium.de:7480`. Remaining:
+at `https://s3.mango.cloudsium.de:7480`. On 2026-08-19 the RBD pools
+`k8s-gitlab` and `k8s-agentic` (8 PGs, size 3, autoscaler off) plus scoped
+`client.csi-*` users were created directly, and ceph-csi-rbd was Helm-installed
+into both Talos clusters (verified with a bound+mounted test PVC). Remaining:
 
 1. Review PG utilization and autoscaler recommendations as object counts grow.
 2. Treat single-node Ceph as local disk-failure protection, not node-level HA,
    and keep independent copies of important S3 data outside mango.
 3. Configure RGW consumers, buckets, policies, and lifecycle rules per
    `docs/s3.md` and `inventory/s3-consumers.yaml`, then smoke-test.
+4. Codify the ceph-csi setup: pools/CephX users into Ansible here, Helm values
+   and the csi-rbd secrets into the stack repos' flux/ (sops), then adopt the
+   imperative Helm releases into Flux.
+5. The mgr `nfs` module crashes periodically (RECENT_MGR_MODULE_CRASH since
+   2026-08-18); investigate or disable it if NFS is not used.
 
 Proxmox recommends three monitors for Ceph HA. That cannot be achieved on one
 physical node; additional monitors on the same node do not provide node redundancy.
