@@ -2,7 +2,7 @@ resource "proxmox_virtual_environment_pool" "stack" {
   for_each = local.stacks
 
   pool_id = each.value.pool
-  comment = "Resources of the ${each.key} stack. Managed by Terraform in devops/proxmox/cluster-mango."
+  comment = "Resources of the ${each.key} stack. Managed by Terraform in proxmox/clusters/mango."
 }
 
 resource "proxmox_virtual_environment_user" "stack" {
