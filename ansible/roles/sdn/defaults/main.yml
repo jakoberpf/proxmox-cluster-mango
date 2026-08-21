@@ -31,3 +31,6 @@ sdn_ethers:
   - mac: BC:24:11:A0:04:22
     ip: 10.42.2.103
     name: agentic-system-worker-1
+  - mac: BC:24:11:A0:04:30
+    ip: 10.42.2.110
+    name: agentic-system-paperclip
