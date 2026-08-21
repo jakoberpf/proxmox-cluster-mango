@@ -66,20 +66,31 @@ resource "proxmox_virtual_environment_acl" "stack_pool" {
   token_id = proxmox_virtual_environment_user_token.stack[each.key].id
 }
 
-resource "proxmox_virtual_environment_acl" "stack_storage_vms" {
-  for_each = local.stacks
-
-  path     = "/storage/vms"
-  role_id  = proxmox_virtual_environment_role.stack_datastore.role_id
-  token_id = proxmox_virtual_environment_user_token.stack[each.key].id
+locals {
+  stack_storage_grants = merge([
+    for stack, cfg in local.stacks : {
+      for storage in cfg.storages : "${stack}/${storage}" => {
+        stack   = stack
+        storage = storage
+      }
+    }
+  ]...)
 }
 
-resource "proxmox_virtual_environment_acl" "stack_storage_local" {
-  for_each = local.stacks
+resource "proxmox_virtual_environment_acl" "stack_storage" {
+  for_each = local.stack_storage_grants
 
-  path     = "/storage/local"
+  path     = "/storage/${each.value.storage}"
   role_id  = proxmox_virtual_environment_role.stack_datastore.role_id
-  token_id = proxmox_virtual_environment_user_token.stack[each.key].id
+  token_id = proxmox_virtual_environment_user_token.stack[each.value.stack].id
+}
+
+resource "proxmox_virtual_environment_acl" "stack_storage_user" {
+  for_each = local.stack_storage_grants
+
+  path    = "/storage/${each.value.storage}"
+  role_id = proxmox_virtual_environment_role.stack_datastore.role_id
+  user_id = proxmox_virtual_environment_user.stack[each.value.stack].user_id
 }
 
 resource "proxmox_virtual_environment_acl" "stack_vnet" {
@@ -97,22 +108,6 @@ resource "proxmox_virtual_environment_acl" "stack_pool_user" {
 
   path    = "/pool/${proxmox_virtual_environment_pool.stack[each.key].pool_id}"
   role_id = "PVEVMAdmin"
-  user_id = proxmox_virtual_environment_user.stack[each.key].user_id
-}
-
-resource "proxmox_virtual_environment_acl" "stack_storage_vms_user" {
-  for_each = local.stacks
-
-  path    = "/storage/vms"
-  role_id = proxmox_virtual_environment_role.stack_datastore.role_id
-  user_id = proxmox_virtual_environment_user.stack[each.key].user_id
-}
-
-resource "proxmox_virtual_environment_acl" "stack_storage_local_user" {
-  for_each = local.stacks
-
-  path    = "/storage/local"
-  role_id = proxmox_virtual_environment_role.stack_datastore.role_id
   user_id = proxmox_virtual_environment_user.stack[each.key].user_id
 }
 
