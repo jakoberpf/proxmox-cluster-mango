@@ -127,6 +127,31 @@
   changed_when: true
   no_log: true
 
+- name: Read PVE storage configuration
+  ansible.builtin.command: pvesm status --storage ceph-rbd-agentic
+  register: ceph_csi_pve_storage
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Add the RBD-backed PVE storage for stack VM data disks
+  when:
+    - not ansible_check_mode
+    - ceph_csi_pve_storage.rc != 0
+  ansible.builtin.command:
+    argv:
+      - pvesm
+      - add
+      - rbd
+      - ceph-rbd-agentic
+      - --pool
+      - k8s-agentic
+      - --nodes
+      - mango
+      - --content
+      - images,rootdir
+  changed_when: true
+
 - name: Read final CSI pool state
   when: not ansible_check_mode
   ansible.builtin.command: ceph osd pool ls detail --format json
