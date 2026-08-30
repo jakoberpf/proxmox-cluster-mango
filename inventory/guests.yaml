@@ -45,14 +45,6 @@ guests:
     name: gitlab-cp-0
     type: qemu
     owner: ../stacks/gitlab
-  - vmid: 411
-    name: gitlab-worker-0
-    type: qemu
-    owner: ../stacks/gitlab
-  - vmid: 412
-    name: gitlab-worker-1
-    type: qemu
-    owner: ../stacks/gitlab
   - vmid: 420
     name: agentic-system-cp-0
     type: qemu
