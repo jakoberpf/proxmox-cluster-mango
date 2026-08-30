@@ -45,3 +45,20 @@ terraform-validate:
     - terraform -chdir=terraform init -backend=true
     - terraform -chdir=terraform fmt -check -recursive
     - terraform -chdir=terraform validate
+
+# Smoke test for the S3 cache on the mango gitlab-runner (radosgw bucket
+# gitlab-runner-cache). Run manually; passes when the cache round-trips.
+cache-smoke:
+  stage: validate
+  image: python:3.12
+  rules:
+    - when: manual
+      allow_failure: true
+  cache:
+    key: cache-smoke
+    paths:
+      - .cache-smoke/
+  script:
+    - echo "cache-marker $(date -u +%s)" > .cache-smoke/marker
+    - cat .cache-smoke/marker
+    - test -s .cache-smoke/marker
