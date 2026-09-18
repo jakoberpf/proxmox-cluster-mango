@@ -1,0 +1,67 @@
+---
+- name: Read the candidate nfs-kernel-server version
+  ansible.builtin.command: apt-cache policy nfs-kernel-server
+  register: mango_nfs_package_policy
+  changed_when: false
+  check_mode: false
+
+- name: Parse the candidate nfs-kernel-server version
+  ansible.builtin.set_fact:
+    mango_nfs_package_version_matches: >-
+      {{ mango_nfs_package_policy.stdout |
+         regex_search('Candidate:\s*(\S+)', '\1') }}
+
+- name: Resolve the candidate nfs-kernel-server version
+  ansible.builtin.set_fact:
+    mango_nfs_package_version: >-
+      {{ mango_nfs_package_version_matches[0] if mango_nfs_package_version_matches else none }}
+
+- name: Require an available nfs-kernel-server candidate
+  ansible.builtin.assert:
+    that:
+      - mango_nfs_package_version is not none
+      - mango_nfs_package_version != '(none)'
+    fail_msg: >-
+      No installable nfs-kernel-server candidate found. Check APT
+      sources before retrying the package phase.
+
+- name: Simulate the pinned nfs-kernel-server installation
+  ansible.builtin.command:
+    argv:
+      - apt-get
+      - --simulate
+      - install
+      - "nfs-kernel-server={{ mango_nfs_package_version }}"
+  register: mango_nfs_install_simulation
+  changed_when: false
+  check_mode: false
+
+- name: Refuse implicit package upgrades, removals, or downgrades
+  ansible.builtin.assert:
+    that:
+      - "'Remv ' not in mango_nfs_install_simulation.stdout"
+      - "'DOWNGRADED' not in mango_nfs_install_simulation.stdout"
+      - mango_nfs_install_simulation.stdout is search('0 upgraded, [0-9]+ newly installed, 0 to remove')
+    fail_msg: "The simulated nfs-kernel-server install would alter existing packages; review it separately."
+
+- name: Install the pinned nfs-kernel-server package
+  ansible.builtin.apt:
+    name: "nfs-kernel-server={{ mango_nfs_package_version }}"
+    state: present
+    update_cache: false
+    allow_downgrade: false
+
+- name: Verify the installed nfs-kernel-server version
+  ansible.builtin.shell: >-
+    dpkg-query -W -f='${Version}\n' nfs-kernel-server
+  args:
+    executable: /bin/bash
+  register: mango_nfs_installed_version
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Enforce the installed nfs-kernel-server version
+  ansible.builtin.assert:
+    that:
+      - ansible_check_mode or mango_nfs_installed_version.stdout == mango_nfs_package_version

@@ -1,0 +1,135 @@
+---
+- name: Verify the NFS gateway target identity
+  ansible.builtin.assert:
+    that:
+      - inventory_hostname == mango_hostname
+      - ansible_facts.hostname == mango_hostname
+      - ansible_facts.virtualization_role == 'host'
+
+- name: Read Ceph status for NFS gateway preflight
+  ansible.builtin.command: ceph status --format json
+  register: mango_nfs_ceph_status_command
+  changed_when: false
+  check_mode: false
+
+- name: Count unclean PGs for NFS gateway preflight
+  ansible.builtin.shell: >-
+    set -o pipefail && ceph pg dump pgs_brief --format json 2>/dev/null |
+    jq '[.pg_stats[] | select((.state | startswith("active+clean")) | not)] | length'
+  args:
+    executable: /bin/bash
+  register: mango_nfs_bad_pgs_command
+  changed_when: false
+  check_mode: false
+
+- name: Read the CephFS filesystem list
+  ansible.builtin.command: ceph fs ls --format json
+  register: mango_nfs_fs_list_command
+  changed_when: false
+  check_mode: false
+
+- name: Read the CephFS mount source
+  ansible.builtin.command: >-
+    findmnt --noheadings --raw --output SOURCE {{ mango_nfs_mount_root }}
+  register: mango_nfs_cephfs_source
+  changed_when: false
+  check_mode: false
+
+- name: Load the NFS export registry
+  ansible.builtin.include_vars:
+    file: "{{ mango_nfs_export_registry }}"
+    name: mango_nfs_registry
+
+- name: Check whether each registered export path already exists
+  ansible.builtin.stat:
+    path: "{{ mango_nfs_mount_root }}{{ item.path }}"
+  register: mango_nfs_export_paths_stat
+  loop: "{{ mango_nfs_registry.exports }}"
+  loop_control:
+    label: "{{ item.id }}"
+  check_mode: false
+
+- name: Read the installed NFS gateway package version
+  ansible.builtin.shell: >-
+    dpkg-query -W -f='${Package} ${Version}\n' {{ mango_nfs_package }} 2>/dev/null || true
+  args:
+    executable: /bin/bash
+  register: mango_nfs_package_command
+  changed_when: false
+  check_mode: false
+
+- name: Read the kernel NFS server active state
+  # service_facts is unreliable for nfs-server.service on this host (it
+  # reports "stopped" even when systemd confirms it is genuinely active) —
+  # query systemd directly instead. Passing no state/enabled makes this a
+  # pure status query, safe in check mode.
+  ansible.builtin.systemd:
+    name: "{{ mango_nfs_service }}"
+  register: mango_nfs_service_facts
+  check_mode: false
+
+- name: Read the rpcbind active state
+  ansible.builtin.systemd:
+    name: rpcbind.service
+  register: mango_nfs_rpcbind_facts
+  check_mode: false
+
+- name: Read current kernel NFS exports
+  ansible.builtin.command: exportfs -v
+  register: mango_nfs_exportfs_command
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Read enabled Ceph mgr modules
+  ansible.builtin.command: ceph mgr module ls --format json
+  register: mango_nfs_mgr_modules_command
+  changed_when: false
+  check_mode: false
+
+- name: Resolve the planned NFS gateway hostname
+  ansible.builtin.command: getent ahostsv4 {{ mango_nfs_fqdn }}
+  register: mango_nfs_dns_command
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Parse NFS gateway preflight state
+  ansible.builtin.set_fact:
+    mango_nfs_ceph_status: "{{ mango_nfs_ceph_status_command.stdout | from_json }}"
+    mango_nfs_fs_names: >-
+      {{ (mango_nfs_fs_list_command.stdout | from_json) | map(attribute='name') | list }}
+    mango_nfs_mgr_modules: "{{ mango_nfs_mgr_modules_command.stdout | from_json }}"
+
+- name: Enforce NFS gateway preflight safety gates
+  ansible.builtin.assert:
+    that:
+      - mango_nfs_ceph_status.fsid == mango_ceph_fsid
+      - mango_nfs_ceph_status.osdmap.num_osds | int == mango_ceph_osd_count
+      - mango_nfs_ceph_status.osdmap.num_up_osds | int == mango_ceph_osd_count
+      - mango_nfs_ceph_status.osdmap.num_in_osds | int == mango_ceph_osd_count
+      - mango_nfs_bad_pgs_command.stdout | int == 0
+      - mango_ceph_filesystem in mango_nfs_fs_names
+      - mango_nfs_cephfs_source.stdout | trim == mango_ceph_monitor_address + ':/'
+
+- name: Report NFS gateway preparation state
+  ansible.builtin.debug:
+    msg:
+      phase: "{{ mango_nfs_phase }}"
+      ceph_health: "{{ mango_nfs_ceph_status.health.status }}"
+      osds: >-
+        {{ mango_nfs_ceph_status.osdmap.num_up_osds }}/{{ mango_nfs_ceph_status.osdmap.num_osds }} up
+      unclean_pgs: "{{ mango_nfs_bad_pgs_command.stdout | int }}"
+      cephfs: "{{ mango_ceph_filesystem }}"
+      export_paths_preexisting: >-
+        {{ mango_nfs_export_paths_stat.results |
+           selectattr('stat.exists', 'true') | map(attribute='item.id') | list }}
+      gateway_package: "{{ mango_nfs_package_command.stdout | default('not installed', true) }}"
+      gateway_service: "{{ mango_nfs_service_facts.status.ActiveState | default('unknown') }}"
+      active_exports: "{{ mango_nfs_exportfs_command.stdout_lines | default([]) }}"
+      rpcbind_service: "{{ mango_nfs_rpcbind_facts.status.ActiveState | default('unknown') }}"
+      mgr_nfs_module_enabled: "{{ 'nfs' in (mango_nfs_mgr_modules.enabled_modules | default([])) }}"
+      mgr_nfs_module_note: >-
+        See docs/remediation.md — the mgr nfs module is known to crash and is
+        not used by this gateway.
+      endpoint_dns: "{{ mango_nfs_dns_command.stdout_lines | default([]) | first | default('unresolved') }}"

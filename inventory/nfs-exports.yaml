@@ -1,0 +1,36 @@
+---
+# Allocation registry only. /etc/exports is generated from this file by the
+# ceph_nfs role's exports phase. Every export is a subdirectory of the same
+# already-mounted CephFS kernel client (client.admin, full access) — there
+# is no per-export Ceph auth cap in this design. The only access boundary
+# is /etc/exports itself: export path, client list, and squash mapping.
+users:
+  - name: jakob-mac
+    uid: 3000
+    gid: 3000
+  - name: nobody
+    uid: 65534
+    gid: 65534
+  - name: root
+    uid: 0
+    gid: 0
+
+exports:
+  - id: browse-lake_v1
+    owner: unassigned
+    user: root
+    path: /
+    access: rw
+    allowed_clients:
+      - 192.168.8.137/32
+    purpose: >-
+      Temporary root-equivalent read-write whole-filesystem export so the
+      existing folder structure inside lake_v1 can be browsed and organized
+      from macOS Finder before real per-folder exports are defined. Squash
+      maps every request to uid/gid 0 so it can read/write/delete anything
+      in lake_v1 regardless of pre-existing ownership — this is NOT a
+      hardened boundary, only an IP allow-list restricted to
+      jakoberpf's-macbook-pro's LAN address. Plain NFS (AUTH_SYS) has no
+      real login; Kerberos (sec=krb5p) is the planned follow-up for actual
+      per-user authentication. Remove this entry once real per-folder
+      exports replace it below.

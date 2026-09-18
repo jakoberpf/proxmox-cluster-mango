@@ -1,0 +1,21 @@
+---
+mango_nfs_phase: audit
+
+mango_nfs_cephfs: "{{ mango_ceph_filesystem }}"
+# Every export is a subdirectory of the CephFS filesystem already mounted
+# by PVE at this path (kernel client, client.admin). There is no separate
+# per-export Ceph identity in this design — the access boundary is
+# entirely /etc/exports (path + client list + squash), not a Ceph auth cap.
+mango_nfs_mount_root: "/mnt/pve/{{ mango_nfs_cephfs }}"
+mango_nfs_export_registry: "{{ playbook_dir }}/../../inventory/nfs-exports.yaml"
+# Convention only, not Ceph-enforced (there is no per-export Ceph cap in
+# this design): every export except the whole-filesystem one ("/") should
+# live under this prefix, to keep real per-folder exports discoverable and
+# separated from ad hoc paths.
+mango_nfs_export_root: /exports
+
+mango_nfs_package: nfs-kernel-server
+mango_nfs_service: nfs-server.service
+mango_nfs_listen_address: "{{ mango_lan_address }}"
+mango_nfs_port: 2049
+mango_nfs_fqdn: nfs.mango.cloudsium.de

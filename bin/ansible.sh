@@ -16,6 +16,7 @@ case "$mode" in
     ansible-playbook plays/main.yaml --syntax-check
     ansible-playbook plays/audit.yaml --syntax-check
     ansible-playbook plays/ceph_rgw.yml --syntax-check
+    ansible-playbook plays/ceph_nfs.yml --syntax-check
     ansible-playbook plays/ceph_csi.yml --syntax-check
     ansible-playbook plays/sdn.yml --syntax-check
     ansible-playbook plays/proxy.yml --syntax-check
@@ -35,6 +36,14 @@ case "$mode" in
     rgw_phase=${RGW_PHASE:-audit}
     ansible-playbook plays/ceph_rgw.yml --check --diff --limit mango \
       -e "mango_rgw_phase=$rgw_phase"
+    ;;
+  nfs-audit)
+    ansible-playbook plays/ceph_nfs.yml --limit mango -e mango_nfs_phase=audit
+    ;;
+  nfs-check)
+    nfs_phase=${NFS_PHASE:-audit}
+    ansible-playbook plays/ceph_nfs.yml --check --diff --limit mango \
+      -e "mango_nfs_phase=$nfs_phase"
     ;;
   csi-check)
     ansible-playbook plays/ceph_csi.yml --check --diff --limit mango
@@ -77,7 +86,7 @@ case "$mode" in
     ansible-playbook plays/main.yaml --diff --limit mango
     ;;
   *)
-    echo "Usage: $0 {syntax|audit|check|apply|rgw-audit|rgw-check|csi-check|csi-apply|sdn-check|sdn-apply|proxy-check|proxy-apply}" >&2
+    echo "Usage: $0 {syntax|audit|check|apply|rgw-audit|rgw-check|nfs-audit|nfs-check|csi-check|csi-apply|sdn-check|sdn-apply|proxy-check|proxy-apply}" >&2
     exit 2
     ;;
 esac

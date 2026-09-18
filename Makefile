@@ -1,4 +1,4 @@
-.PHONY: help setup lint syntax audit plan apply rgw-audit rgw-plan csi-plan sdn-plan proxy-plan terraform
+.PHONY: help setup lint syntax audit plan apply rgw-audit rgw-plan nfs-audit nfs-plan csi-plan sdn-plan proxy-plan terraform
 
 help:
 	@echo "mango node-management targets"
@@ -10,6 +10,8 @@ help:
 	@echo "  apply   Apply after review; requires CONFIRM=mango"
 	@echo "  rgw-audit              Read-only Ceph RGW readiness audit"
 	@echo "  rgw-plan PHASE=<name>  Preview one gated RGW phase"
+	@echo "  nfs-audit              Read-only CephFS NFS gateway readiness audit"
+	@echo "  nfs-plan PHASE=<name>  Preview one gated NFS gateway phase"
 	@echo "  csi-plan               Preview the gated Ceph CSI play"
 	@echo "  sdn-plan               Preview the gated SDN host play"
 	@echo "  proxy-plan             Preview the gated reverse proxy play"
@@ -48,6 +50,16 @@ rgw-plan:
 		exit 2; \
 	fi
 	@RGW_PHASE="$(PHASE)" ./bin/ansible.sh rgw-check
+
+nfs-audit:
+	@./bin/ansible.sh nfs-audit
+
+nfs-plan:
+	@if [ -z "$(PHASE)" ]; then \
+		echo "Set PHASE to package, exports, or daemon."; \
+		exit 2; \
+	fi
+	@NFS_PHASE="$(PHASE)" ./bin/ansible.sh nfs-check
 
 proxy-plan:
 	@./bin/ansible.sh proxy-check

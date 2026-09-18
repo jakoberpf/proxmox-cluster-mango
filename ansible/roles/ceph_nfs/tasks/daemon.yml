@@ -1,0 +1,84 @@
+---
+- name: Verify the nfs-kernel-server package is installed
+  ansible.builtin.shell: >-
+    dpkg-query -W -f='${Version}\n' nfs-kernel-server
+  args:
+    executable: /bin/bash
+  register: mango_nfs_daemon_package_version
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Check the rendered export table is present
+  ansible.builtin.stat:
+    path: /etc/exports
+  register: mango_nfs_exports_stat
+  check_mode: false
+
+- name: Require package and export table inputs for daemon activation
+  ansible.builtin.assert:
+    that:
+      - ansible_check_mode or mango_nfs_daemon_package_version.stdout | length > 0
+      - ansible_check_mode or mango_nfs_exports_stat.stat.exists
+    fail_msg: >-
+      The daemon phase requires the pinned package and a rendered
+      /etc/exports from the exports phase.
+
+- name: Preview NFS gateway daemon activation in check mode
+  when: ansible_check_mode
+  ansible.builtin.debug:
+    msg:
+      service: "{{ mango_nfs_service }}"
+      listen: "{{ mango_nfs_listen_address }}:{{ mango_nfs_port }}"
+      exports_present: "{{ mango_nfs_exports_stat.stat.exists }}"
+
+- name: Restrict the kernel NFS server to NFSv4 only
+  when: not ansible_check_mode
+  ansible.builtin.lineinfile:
+    path: /etc/nfs.conf
+    regexp: '^#?\s*vers3\s*='
+    line: "vers3=n"
+    insertafter: '^\[nfsd\]'
+    backup: true
+  register: mango_nfs_conf
+
+- name: Enable and start the kernel NFS server
+  when: not ansible_check_mode
+  ansible.builtin.systemd:
+    name: "{{ mango_nfs_service }}"
+    enabled: true
+    state: "{{ 'restarted' if mango_nfs_conf.changed else 'started' }}"
+
+- name: Re-export the current export table
+  when: not ansible_check_mode
+  ansible.builtin.command: exportfs -ra
+  changed_when: true
+
+- name: Verify the NFS gateway listens on the expected port
+  when: not ansible_check_mode
+  ansible.builtin.shell: >-
+    set -o pipefail && ss -H -tln | awk '{print $4}' | grep -q ':{{ mango_nfs_port }}$'
+  args:
+    executable: /bin/bash
+  register: mango_nfs_listen_check
+  changed_when: false
+  failed_when: false
+  retries: 12
+  delay: 5
+  until: mango_nfs_listen_check.rc == 0
+
+- name: Enforce the NFS gateway listener check
+  when: not ansible_check_mode
+  ansible.builtin.assert:
+    that:
+      - mango_nfs_listen_check.rc == 0
+    fail_msg: "The kernel NFS server is not listening on {{ mango_nfs_port }}/tcp."
+
+- name: Re-run the clean-PG gate after NFS gateway activation
+  when: not ansible_check_mode
+  ansible.builtin.shell: >-
+    set -o pipefail && ceph pg dump pgs_brief --format json 2>/dev/null |
+    jq -e '[.pg_stats[] | select((.state | startswith("active+clean")) | not)] | length == 0'
+  args:
+    executable: /bin/bash
+  changed_when: false

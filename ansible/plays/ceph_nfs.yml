@@ -1,0 +1,20 @@
+---
+- name: Prepare the CephFS NFS gateway on mango
+  hosts: proxmox_nodes
+  become: true
+  gather_facts: true
+
+  pre_tasks:
+    - name: Validate the requested NFS phase
+      ansible.builtin.assert:
+        that:
+          - mango_nfs_phase in ['audit', 'package', 'exports', 'daemon']
+          - >-
+            ansible_check_mode or mango_nfs_phase == 'audit' or
+            (mango_nfs_confirm | default('')) == 'mango-nfs-' + mango_nfs_phase
+        fail_msg: >-
+          Preview with --check --diff. Applying a phase requires
+          -e mango_nfs_confirm=mango-nfs-{{ mango_nfs_phase }}.
+
+  roles:
+    - role: ceph_nfs

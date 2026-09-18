@@ -9,7 +9,9 @@
 | Host bridge and management address | This repository; activation is always a separate maintenance step |
 | Storage attachment, ZFS maintenance policy, Ceph health contract | This repository |
 | Ceph RGW daemon, endpoint contract, pool topology, S3 identity registry | This repository, gated phases |
+| CephFS kernel NFS gateway, export registry | This repository, gated phases |
 | Ceph OSD creation/removal, pool deletion, recovery operations | Explicit maintenance runbooks only |
+| Physical-node capacity and shared cluster-network design | This repository; procurement and activation are separate reviewed operations |
 | VM/LXC lifecycle and application configuration | Separate stack repositories |
 | Stack Terraform state and secrets | The owning stack repository/backend |
 

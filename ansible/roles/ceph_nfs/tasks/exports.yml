@@ -1,0 +1,202 @@
+---
+# Safety rules for this file, do not weaken them:
+#   - Never use state: absent on anything under the CephFS mount.
+#   - Never set recurse: true on a file task — every ownership change here
+#     targets exactly one directory we just validated, never a subtree that
+#     might contain pre-existing data.
+#   - Only rw exports get directory provisioning (create + chown), and only
+#     when their path is not the CephFS root ("/"). A whole-filesystem
+#     export (rw or ro) must never have its ownership/mode touched by this
+#     role — that path already exists and is never "ours" to create.
+#   - Nothing runs against the filesystem until every registry path is
+#     validated AND a verified whole-fs CephFS snapshot exists.
+#
+# Unlike the earlier Ganesha design, there is no per-export Ceph auth cap
+# here — every export is served through the same already-mounted
+# client.admin kernel mount. The access boundary is entirely this file plus
+# the rendered /etc/exports (path + client list + squash), not Ceph itself.
+
+- name: Load the NFS export registry
+  ansible.builtin.include_vars:
+    file: "{{ mango_nfs_export_registry }}"
+    name: mango_nfs_registry
+
+- name: Refuse a placeholder export registry
+  ansible.builtin.assert:
+    that:
+      - >-
+        mango_nfs_registry.exports |
+        selectattr('owner', 'equalto', 'unassigned') |
+        selectattr('purpose', 'search', '^placeholder') | list | length == 0
+    fail_msg: >-
+      inventory/nfs-exports.yaml still contains the placeholder export;
+      replace it with real allocations before running the exports phase.
+
+- name: Refuse an export path outside the mount root or the export convention
+  ansible.builtin.assert:
+    that:
+      - item.path is match('^/')
+      - not (item.path is search('\.\.'))
+      - >-
+        item.path == '/' or
+        item.path is match('^' + mango_nfs_export_root + '/')
+    fail_msg: >-
+      Export "{{ item.id }}" has path "{{ item.path }}" — must be "/" or a
+      path under {{ mango_nfs_export_root }}, with no ".." segments.
+  loop: "{{ mango_nfs_registry.exports }}"
+  loop_control:
+    label: "{{ item.id }}"
+
+- name: Refuse an export referencing an undefined user
+  ansible.builtin.assert:
+    that:
+      - mango_nfs_registry.users | selectattr('name', 'equalto', item.user) | list | length == 1
+    fail_msg: >-
+      Export "{{ item.id }}" references user "{{ item.user }}", which is not
+      defined in inventory/nfs-exports.yaml's users list.
+  loop: "{{ mango_nfs_registry.exports }}"
+  loop_control:
+    label: "{{ item.id }}"
+
+- name: Preview export directories and /etc/exports in check mode
+  when: ansible_check_mode
+  ansible.builtin.debug:
+    msg:
+      exports: "{{ mango_nfs_registry.exports }}"
+      users: "{{ mango_nfs_registry.users }}"
+      exports_that_will_be_provisioned: >-
+        {{ mango_nfs_registry.exports |
+           selectattr('access', 'equalto', 'rw') |
+           rejectattr('path', 'equalto', '/') |
+           map(attribute='id') | list }}
+      exports_served_without_ownership_changes: >-
+        {{ mango_nfs_registry.exports |
+           selectattr('path', 'equalto', '/') |
+           map(attribute='id') | list }}
+
+- name: Read the current time for the pre-provisioning snapshot name
+  ansible.builtin.set_fact:
+    mango_nfs_snapshot_name: "pre-nfs-exports-{{ ansible_date_time.iso8601_basic_short }}"
+
+- name: Check for an existing pre-provisioning CephFS snapshot
+  ansible.builtin.stat:
+    path: "{{ mango_nfs_mount_root }}/.snap/{{ mango_nfs_snapshot_name }}"
+  register: mango_nfs_snapshot_stat
+  check_mode: false
+
+- name: Create a whole-filesystem CephFS snapshot before touching lake_v1
+  when:
+    - not ansible_check_mode
+    - not mango_nfs_snapshot_stat.stat.exists
+  ansible.builtin.command:
+    argv:
+      - mkdir
+      - "{{ mango_nfs_mount_root }}/.snap/{{ mango_nfs_snapshot_name }}"
+  changed_when: true
+
+- name: Verify the pre-provisioning snapshot exists
+  when: not ansible_check_mode
+  ansible.builtin.stat:
+    path: "{{ mango_nfs_mount_root }}/.snap/{{ mango_nfs_snapshot_name }}"
+  register: mango_nfs_snapshot_verify
+  check_mode: false
+
+- name: Refuse to provision exports without a verified safety snapshot
+  when: not ansible_check_mode
+  ansible.builtin.assert:
+    that:
+      - mango_nfs_snapshot_verify.stat.exists
+    fail_msg: >-
+      Refusing to touch {{ mango_nfs_cephfs }} without a verified
+      pre-change snapshot at .snap/{{ mango_nfs_snapshot_name }}. Investigate
+      why it could not be created before retrying.
+
+- name: Create each rw export's directory with its owning identity
+  when:
+    - not ansible_check_mode
+    - item.access == 'rw'
+    - item.path != '/'
+  vars:
+    mango_nfs_export_user: >-
+      {{ mango_nfs_registry.users | selectattr('name', 'equalto', item.user) | first }}
+  ansible.builtin.file:
+    path: "{{ mango_nfs_mount_root }}{{ item.path }}"
+    state: directory
+    owner: "{{ mango_nfs_export_user.uid }}"
+    group: "{{ mango_nfs_export_user.gid }}"
+    mode: "{{ item.mode | default('0750') }}"
+  loop: "{{ mango_nfs_registry.exports }}"
+  loop_control:
+    label: "{{ item.id }}"
+
+- name: Verify each rw export directory landed with the intended ownership
+  when:
+    - not ansible_check_mode
+    - item.access == 'rw'
+    - item.path != '/'
+  ansible.builtin.stat:
+    path: "{{ mango_nfs_mount_root }}{{ item.path }}"
+  register: mango_nfs_export_stat
+  loop: "{{ mango_nfs_registry.exports }}"
+  loop_control:
+    label: "{{ item.id }}"
+
+- name: Enforce rw export directory ownership
+  when:
+    - not ansible_check_mode
+    - item.item is defined
+    - item.item.access == 'rw'
+    - item.item.path != '/'
+  vars:
+    mango_nfs_export_user: >-
+      {{ mango_nfs_registry.users | selectattr('name', 'equalto', item.item.user) | first }}
+  ansible.builtin.assert:
+    that:
+      - item.stat.exists
+      - item.stat.uid == mango_nfs_export_user.uid
+      - item.stat.gid == mango_nfs_export_user.gid
+  loop: "{{ mango_nfs_export_stat.results }}"
+  loop_control:
+    label: "{{ item.item.id }}"
+
+- name: Render the kernel NFS export table
+  when: not ansible_check_mode
+  ansible.builtin.template:
+    src: exports.j2
+    dest: /etc/exports
+    owner: root
+    group: root
+    mode: "0644"
+    backup: true
+  vars:
+    mango_nfs_exports: "{{ mango_nfs_registry.exports }}"
+    mango_nfs_users: "{{ mango_nfs_registry.users }}"
+  register: mango_nfs_exports_file
+
+- name: Reload kernel NFS exports
+  when:
+    - not ansible_check_mode
+    - mango_nfs_exports_file.changed
+  ansible.builtin.command: exportfs -ra
+  changed_when: true
+
+- name: Verify the rendered exports are active
+  when: not ansible_check_mode
+  ansible.builtin.command: exportfs -v
+  register: mango_nfs_exportfs_verify
+  changed_when: false
+
+- name: Enforce every export path is actually exported
+  when: not ansible_check_mode
+  vars:
+    mango_nfs_host_path: >-
+      {{ mango_nfs_mount_root if item.path == '/' else mango_nfs_mount_root + item.path }}
+  ansible.builtin.assert:
+    that:
+      - mango_nfs_host_path in mango_nfs_exportfs_verify.stdout
+    fail_msg: >-
+      {{ mango_nfs_host_path }} does not appear in `exportfs -v` output
+      after reload.
+  loop: "{{ mango_nfs_registry.exports }}"
+  loop_control:
+    label: "{{ item.id }}"

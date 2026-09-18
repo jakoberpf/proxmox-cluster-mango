@@ -1,0 +1,16 @@
+# Managed by Ansible role ceph_nfs. Do not edit by hand.
+#
+# Every export below is a subdirectory of the same already-mounted CephFS
+# kernel client ({{ mango_nfs_mount_root }}, client.admin, full access).
+# Unlike the earlier Ganesha design, there is no per-export Ceph auth cap —
+# the only access boundary is this file: export path, client list, and
+# squash mapping. "Different users" means all_squash to a fixed
+# anonuid/anongid per export, not a real login; see docs/nfs.md.
+
+{% for export in mango_nfs_exports %}
+{% set export_user = mango_nfs_users | selectattr('name', 'equalto', export.user) | first %}
+{% set opts = (export.access == 'rw') | ternary('rw', 'ro') + ',sync,no_subtree_check,all_squash,anonuid=' + (export_user.uid | string) + ',anongid=' + (export_user.gid | string) + ((export.path == '/') | ternary(',fsid=0', '')) %}
+{% set host_path = mango_nfs_mount_root if export.path == '/' else mango_nfs_mount_root + export.path %}
+{{ host_path }}{% for client in export.allowed_clients %} {{ client }}({{ opts }}){% endfor %}
+
+{% endfor %}

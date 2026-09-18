@@ -1,0 +1,15 @@
+---
+- name: Run NFS gateway preflight audit
+  ansible.builtin.include_tasks: audit.yml
+
+- name: Install the kernel NFS server package
+  when: mango_nfs_phase == 'package'
+  ansible.builtin.include_tasks: package.yml
+
+- name: Snapshot CephFS, provision export directories, and render /etc/exports
+  when: mango_nfs_phase == 'exports'
+  ansible.builtin.include_tasks: exports.yml
+
+- name: Enable and start the kernel NFS server
+  when: mango_nfs_phase == 'daemon'
+  ansible.builtin.include_tasks: daemon.yml

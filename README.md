@@ -33,6 +33,9 @@ Voltaire 4036 IPoIB design are recorded in the
 
 The proposed Ceph S3 service is documented in [the RGW runbook](docs/s3.md).
 
+The live CephFS NFS gateway is documented in [the NFS runbook](docs/nfs.md),
+with an [interactive architecture diagram](docs/nfs-architecture.html).
+
 ## Commands
 
 ```sh
