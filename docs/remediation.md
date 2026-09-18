@@ -70,6 +70,23 @@ physical node; additional monitors on the same node do not provide node redundan
 6. Codify the Dashboard setup (module, RGW system user, credentials, admin
    account) in Ansible; it was enabled manually on 2026-08-18.
 
+## P2: compute and cluster expansion
+
+The 2026-09-09 capacity sample found sustained CPU pressure while memory still
+had approximately 78-80 GiB available. Follow the
+[compute capacity and expansion plan](capacity-plan.md):
+
+1. Correct mango's lack of thermal margin before considering a 250 W in-place
+   CPU upgrade.
+2. Validate and burn in two matching 128 GB enterprise servers before forming a
+   three-node Proxmox quorum with mango.
+3. Retain Ethernet for management and Corosync. Validate the Voltaire 4036,
+   QDR HCAs, QSFP cables, subnet manager, IPoIB MTU, throughput, recovery, and
+   wall power in isolation before designing persistent interfaces.
+4. Treat Ceph network migration and distribution of OSDs or monitors as explicit
+   reviewed operations; neither belongs in the default play.
+5. Measure the first two nodes under representative load before buying the third.
+
 ## References
 
 - [Proxmox VE Administration Guide](https://pve.proxmox.com/pve-docs/pve-admin-guide.pdf)

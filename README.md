@@ -27,6 +27,10 @@ The observed inventory and unresolved issues are recorded in
 [live state](docs/live-state.md) and the prioritized
 [remediation backlog](docs/remediation.md).
 
+The measured CPU bottleneck, second-hand server comparison, power model, and
+Voltaire 4036 IPoIB design are recorded in the
+[compute capacity and expansion plan](docs/capacity-plan.md).
+
 The proposed Ceph S3 service is documented in [the RGW runbook](docs/s3.md).
 
 ## Commands

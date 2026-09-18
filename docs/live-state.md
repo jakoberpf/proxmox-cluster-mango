@@ -71,3 +71,14 @@ Last verified: 2026-08-19. Re-run `make audit` before relying on this snapshot.
 - LXCs 105–107 are the three Pi-hole instances.
 - Recent logs contain memory-cgroup OOM kills for Pi-hole FTL and one NetBird process.
 - These resource/application changes belong in the future Pi-hole stack repository.
+
+## Capacity observation
+
+A separate capacity sample on 2026-09-09 found mango CPU constrained: load was
+approximately 38-41 across 32 logical CPUs, sampled CPU use left approximately
+15% idle, and CPU pressure was approximately 16-17%. Approximately 78-80 GiB of
+RAM remained available and memory pressure was near zero. The CPU reached 68 C
+during the sample, leaving no demonstrated thermal margin for a higher-TDP
+in-place upgrade. See the [compute capacity and expansion plan](capacity-plan.md)
+for the measurements, purchase options, cost model, and proposed InfiniBand
+fabric.
