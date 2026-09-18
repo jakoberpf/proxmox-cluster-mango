@@ -12,5 +12,11 @@ locals {
       subnet   = "10.42.2.0/24"
       storages = ["vms", "local", "ceph-rbd-agentic"]
     }
+    agentic-os = {
+      pool     = "agentic-os"
+      vnet     = "vnagentos"
+      subnet   = "10.42.3.0/24"
+      storages = ["vms", "local"]
+    }
   }
 }

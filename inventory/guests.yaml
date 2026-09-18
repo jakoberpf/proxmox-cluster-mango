@@ -57,3 +57,7 @@ guests:
     name: agentic-system-worker-1
     type: qemu
     owner: ../stacks/agentic-system
+  - vmid: 440
+    name: agentic-os-omarchy
+    type: qemu
+    owner: ../stacks/agentic-os

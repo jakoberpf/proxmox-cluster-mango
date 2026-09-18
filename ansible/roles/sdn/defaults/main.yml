@@ -34,3 +34,6 @@ sdn_ethers:
   - mac: BC:24:11:A0:04:30
     ip: 10.42.2.110
     name: agentic-system-paperclip
+  - mac: BC:24:11:A0:03:40
+    ip: 10.42.3.110
+    name: agentic-os-omarchy
